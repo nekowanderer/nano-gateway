@@ -1,0 +1,26 @@
+services:
+  mysql:
+    build: mysql/
+    container_name: the_crud_mysql
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/etc/my.cnf:/etc/mysql/my.cnf:ro
+      - ./mysql/init_sql_scripts:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 3
+
+  app:
+    build: app/
+    container_name: the_crud_webapp
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_HOST=mysql
+    depends_on:
+      - mysql
