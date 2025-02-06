@@ -39,4 +39,46 @@ class RestResourceTest {
                 .body("error", is("Invalid JSON"));
     }
 
+    @Test
+    void testDelayEndpointWithValidJson() {
+        String requestPayload = "{\"delay\": 1000}";
+
+        given()
+                .contentType("application/json")
+                .body(requestPayload)
+                .when()
+                .post("/rest_resource/delay")
+                .then()
+                .statusCode(200)
+                .body("delayUpdateInformation", is("Delay updated to 1000 ms"));
+    }
+
+    @Test
+    void testDelayEndpointWithValidJsonButNegativeDelay() {
+        String requestPayload = "{\"delay\": -1000}";
+
+        given()
+                .contentType("application/json")
+                .body(requestPayload)
+                .when()
+                .post("/rest_resource/delay")
+                .then()
+                .statusCode(200)
+                .body("delayUpdateInformation", is("Delay updated to 0 ms"));
+    }
+
+    @Test
+    void testDelayEndpointWithInvalidJson() {
+        String requestPayload = "{\"delay\": 1000\"}";
+
+        given()
+                .contentType("application/json")
+                .body(requestPayload)
+                .when()
+                .post("/rest_resource/delay")
+                .then()
+                .statusCode(400)
+                .body("error", is("Invalid JSON"));
+    }
+
 }

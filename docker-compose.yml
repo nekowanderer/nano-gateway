@@ -1,11 +1,11 @@
 services:
   simple_api_build:
     build:
-      context: simple_api/
-    image: simple_api  # 建立共用的映像檔
+      context: simple-api/
+    image: simple_api
 
   simple_api_1:
-    image: simple_api  # 直接使用建好的映像檔
+    image: simple_api
     container_name: simple_api_1
     ports:
       - "8081:8080"
