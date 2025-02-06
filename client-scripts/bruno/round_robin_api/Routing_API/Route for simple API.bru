@@ -1,0 +1,19 @@
+meta {
+  name: Route for simple API
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/routing-api/route/simple_api
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "game": "Mobile Legends",
+    "gamerID":"GYUTDTE",
+    "points":20
+  }
+}
