@@ -1,26 +1,50 @@
 services:
-  mysql:
-    build: mysql/
-    container_name: the_crud_mysql
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/etc/my.cnf:/etc/mysql/my.cnf:ro
-      - ./mysql/init_sql_scripts:/docker-entrypoint-initdb.d
-    environment:
-      - MYSQL_ROOT_PASSWORD=root123
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 10s
-      retries: 3
+  simple_api_build:
+    build:
+      context: simple_api/
+    image: simple_api  # 建立共用的映像檔
 
-  app:
-    build: app/
-    container_name: the_crud_webapp
+  simple_api_1:
+    image: simple_api  # 直接使用建好的映像檔
+    container_name: simple_api_1
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
-      - DATABASE_HOST=mysql
+      - QUARKUS_HTTP_PORT=8080
     depends_on:
-      - mysql
+      - simple_api_build
+
+  simple_api_2:
+    image: simple_api
+    container_name: simple_api_2
+    ports:
+      - "8082:8080"
+    environment:
+      - QUARKUS_HTTP_PORT=8080
+    depends_on:
+      - simple_api_build
+
+  simple_api_3:
+    image: simple_api
+    container_name: simple_api_3
+    ports:
+      - "8083:8080"
+    environment:
+      - QUARKUS_HTTP_PORT=8080
+    depends_on:
+      - simple_api_build
+
+#  routing_api:
+#    image: routing_api
+#    container_name: routing_api
+#    build:
+#      context: ./quarkus/routing_api
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - QUARKUS_HTTP_PORT=8080
+#      - SIMPLE_API_INSTANCES=http://simple_api_1:8080,http://simple_api_2:8080,http://simple_api_3:8080
+#    depends_on:
+#      - simple_api_1
+#      - simple_api_2
+#      - simple_api_3
