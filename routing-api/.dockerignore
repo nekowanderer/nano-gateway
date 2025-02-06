@@ -1,0 +1,11 @@
+*
+
+# Allow Docker to copy the following resources
+!pom.xml
+!src/**
+
+# Allow the following Quarkus generated files
+!target/*-runner
+!target/*-runner.jar
+!target/lib/*
+!target/quarkus-app/*
