@@ -1,4 +1,4 @@
-package ide.clu.api.common;
+package idv.clu.api.common;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

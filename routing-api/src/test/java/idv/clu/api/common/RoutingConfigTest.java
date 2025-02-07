@@ -1,4 +1,4 @@
-package ide.clu.api.common;
+package idv.clu.api.common;
 
 import org.junit.jupiter.api.Test;
 
@@ -70,4 +70,5 @@ class RoutingConfigTest {
         assertEquals("instance1", result.get(0), "First instance mismatch");
         assertEquals("instance2", result.get(1), "Second instance mismatch");
     }
+
 }

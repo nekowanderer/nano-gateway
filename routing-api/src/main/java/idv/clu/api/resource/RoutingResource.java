@@ -1,44 +1,48 @@
 package idv.clu.api.resource;
 
-import ide.clu.api.common.RoutingConfig;
+import idv.clu.api.common.SimpleApiClient;
+import idv.clu.api.common.SimpleApiClientProvider;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/route")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class RoutingResource {
 
-    @Inject
-    RoutingConfig routingConfig;
+    private final static Logger LOG = LoggerFactory.getLogger(RoutingResource.class);
 
-    private final AtomicInteger index = new AtomicInteger(0);
+    @Inject
+    SimpleApiClientProvider simpleApiClientProvider;
 
     @POST
     @Path("/simple_api")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response simpleApiRoute(String requestPayload) {
-        final List<String> instances = routingConfig.getSimpleApiInstances();
-        if (instances.isEmpty()) {
+        try {
+            final SimpleApiClient client = simpleApiClientProvider.getNextClient();
+
+            LOG.info("Route request to target instance: {}", client);
+
+            Response response = client.echo(requestPayload);
+            return Response
+                    .status(response.getStatus())
+                    .entity(response.getEntity())
+                    .type(response.getMediaType())
+                    .build();
+        } catch (Exception e) {
+            LOG.error("Error occurred while calling target instance: {}", e.getMessage());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"error\": \"No instances configured for simple api\"}")
+                    .entity("{\"error\": \"Error occurred while calling target instance.\"}")
                     .type(MediaType.APPLICATION_JSON)
                     .build();
+
         }
-
-        String targetUrl = instances.get(index.getAndUpdate(i -> (i + 1) % instances.size()));
-
-        return Response
-                .ok()
-                .entity("{\"route_to\": \"" + targetUrl + "\"}")
-                .type(MediaType.APPLICATION_JSON)
-                .build();
     }
 
 }
