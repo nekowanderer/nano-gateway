@@ -19,8 +19,8 @@ public enum CircuitState {
     },
     OPEN {
         @Override
-        public CircuitState checkState(long currentTime, long delayTimeMs, CircuitContext context) {
-            if (currentTime - context.getLastFailedTime() >= delayTimeMs) {
+        public CircuitState checkState(long currentTime, long circuitBreakerResetDelayMs, CircuitContext context) {
+            if (currentTime - context.getLastFailedTime() >= circuitBreakerResetDelayMs) {
                 return HALF_OPEN;
             }
             return this;
@@ -57,7 +57,7 @@ public enum CircuitState {
         return this;
     }
 
-    public CircuitState checkState(long currentTime, long delayTimeMs, CircuitContext context) {
+    public CircuitState checkState(long currentTime, long circuitBreakerResetDelayMs, CircuitContext context) {
         return this;
     }
 

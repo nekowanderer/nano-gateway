@@ -20,14 +20,14 @@ public class CircuitBreaker {
     final ConcurrentHashMap<String, CircuitState> endpointStates = new ConcurrentHashMap<>();
 
     @Inject
-    @ConfigProperty(name = "circuitbreaker.delay.ms", defaultValue = "10000")
-    long delayTimeMs;
+    @ConfigProperty(name = "circuitbreaker.reset.delay.ms", defaultValue = "10000")
+    long circuitBreakerResetDelayMs;
 
     @SuppressWarnings("unused")
     public CircuitBreaker() {}
 
-    public CircuitBreaker(long delayTimeMs) {
-        this.delayTimeMs = delayTimeMs;
+    public CircuitBreaker(long circuitBreakerResetDelayMs) {
+        this.circuitBreakerResetDelayMs = circuitBreakerResetDelayMs;
     }
 
     public boolean allowRequest(String endpoint) {
@@ -36,7 +36,7 @@ public class CircuitBreaker {
 
         long currentTime = System.currentTimeMillis();
 
-        CircuitState newState = state.checkState(currentTime, delayTimeMs, context);
+        CircuitState newState = state.checkState(currentTime, circuitBreakerResetDelayMs, context);
         endpointStates.put(endpoint, newState);
 
         return newState != CircuitState.OPEN;

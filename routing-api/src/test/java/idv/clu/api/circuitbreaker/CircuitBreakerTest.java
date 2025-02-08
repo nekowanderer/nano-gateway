@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CircuitBreakerTest {
 
-    private final static long DEFAULT_DELAY_TIME_MS = 10000L;
+    private final static long DEFAULT_CIRCUIT_BREAKER_RESET_DELAY_MS = 10000L;
     private final static String DEFAULT_ENDPOINT = "test-endpoint";
 
     @Test
     public void testAllowRequestWhenStateIsClosedShouldAllowRequest() {
-        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_DELAY_TIME_MS);
+        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_CIRCUIT_BREAKER_RESET_DELAY_MS);
         CircuitState circuitState = CircuitState.CLOSED;
 
         var context = new CircuitContext();
@@ -42,7 +42,7 @@ public class CircuitBreakerTest {
 
     @Test
     public void testAllowRequestWhenStateIsHalfOpenShouldAllowRequest() {
-        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_DELAY_TIME_MS);
+        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_CIRCUIT_BREAKER_RESET_DELAY_MS);
         CircuitState circuitState = CircuitState.HALF_OPEN;
 
         var context = new CircuitContext();
@@ -58,7 +58,7 @@ public class CircuitBreakerTest {
 
     @Test
     public void testAllowRequestWhenEndpointIsNewShouldAllowRequest() {
-        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_DELAY_TIME_MS);
+        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_CIRCUIT_BREAKER_RESET_DELAY_MS);
 
         boolean isAllowed = circuitBreaker.allowRequest(DEFAULT_ENDPOINT);
 
@@ -115,7 +115,7 @@ public class CircuitBreakerTest {
 
     @Test
     public void testAllowRequestHandlesMultipleEndpointsIndependently() {
-        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_DELAY_TIME_MS);
+        CircuitBreaker circuitBreaker = new CircuitBreaker(DEFAULT_CIRCUIT_BREAKER_RESET_DELAY_MS);
 
         String endpoint1 = "endpoint-1";
         String endpoint2 = "endpoint-2";

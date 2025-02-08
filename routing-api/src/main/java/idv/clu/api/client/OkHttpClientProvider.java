@@ -39,14 +39,14 @@ public class OkHttpClientProvider {
         Request build();
     }
 
-    public HttpResult sendGetRequest(String path) {
+    HttpResult sendGetRequest(String path) {
         return sendRequest(() -> new Request.Builder()
                 .url(routingStrategy.getNextTargetUrl(path))
                 .get()
                 .build());
     }
 
-    public HttpResult sendPostRequest(String path, String payload) {
+    HttpResult sendPostRequest(String path, String payload) {
         return sendRequest(() -> new Request.Builder()
                 .url(routingStrategy.getNextTargetUrl(path))
                 .post(RequestBody.create(payload, APPLICATION_JSON))
@@ -54,8 +54,8 @@ public class OkHttpClientProvider {
     }
 
     private HttpResult sendRequest(RequestBuilder requestBuilder) {
-        Request request = requestBuilder.build();
-        String targetUrl = request.url().toString();
+        final Request request = requestBuilder.build();
+        final String targetUrl = request.url().toString();
 
         if (!circuitBreaker.allowRequest(targetUrl)) {
             throw new CircuitBreakerOpenException(targetUrl);

@@ -10,6 +10,9 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 /**
  * @author clu
+ *
+ * This component can't discover docker sontainer under docker compose env,
+ * not sure if it's a lib bug or configuration issue, need to investigate further.
  */
 @RegisterRestClient
 @Path("/simple-api/rest_resource")
