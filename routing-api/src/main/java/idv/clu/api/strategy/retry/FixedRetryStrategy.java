@@ -1,6 +1,8 @@
 package idv.clu.api.strategy.retry;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.concurrent.Callable;
 
@@ -10,13 +12,12 @@ import java.util.concurrent.Callable;
 @ApplicationScoped
 public class FixedRetryStrategy implements RetryStrategy {
 
-    private static final int DEFAULT_MAX_RETRY_COUNT = 3;
-
-    private final int maxRetryCount;
+    @Inject
+    @ConfigProperty(name = "retry.max.count", defaultValue = "3")
+    int maxRetryCount;
 
     @SuppressWarnings("unused")
     public FixedRetryStrategy() {
-        this(DEFAULT_MAX_RETRY_COUNT);
     }
 
     public FixedRetryStrategy(int maxRetryCount) {
