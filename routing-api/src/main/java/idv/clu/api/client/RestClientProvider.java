@@ -1,5 +1,6 @@
-package idv.clu.api.common;
+package idv.clu.api.client;
 
+import idv.clu.api.common.RoutingConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,9 +18,9 @@ import java.util.stream.Collectors;
  * @author clu
  */
 @ApplicationScoped
-public class SimpleApiClientProvider {
+public class RestClientProvider {
 
-    private final static Logger LOG = LoggerFactory.getLogger(SimpleApiClientProvider.class);
+    private final static Logger LOG = LoggerFactory.getLogger(RestClientProvider.class);
 
     @Inject
     RoutingConfig routingConfig;

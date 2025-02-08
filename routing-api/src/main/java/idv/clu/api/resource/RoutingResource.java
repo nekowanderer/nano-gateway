@@ -1,7 +1,7 @@
 package idv.clu.api.resource;
 
-import idv.clu.api.common.SimpleApiClient;
-import idv.clu.api.common.SimpleApiClientProvider;
+import idv.clu.api.client.OkHttpClientProvider;
+import idv.clu.api.client.SimpleApiResource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -17,23 +17,14 @@ public class RoutingResource {
     private final static Logger LOG = LoggerFactory.getLogger(RoutingResource.class);
 
     @Inject
-    SimpleApiClientProvider simpleApiClientProvider;
+    OkHttpClientProvider okHttpClientProvider;
 
     @POST
     @Path("/simple_api")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response simpleApiRoute(String requestPayload) {
         try {
-            final SimpleApiClient client = simpleApiClientProvider.getNextClient();
-
-            LOG.info("Route request to target instance: {}", client);
-
-            Response response = client.echo(requestPayload);
-            return Response
-                    .status(response.getStatus())
-                    .entity(response.getEntity())
-                    .type(response.getMediaType())
-                    .build();
+            return okHttpClientProvider.sendPostRequest(SimpleApiResource.getSimpleApiEchoUrl(), requestPayload);
         } catch (Exception e) {
             LOG.error("Error occurred while calling target instance: {}", e.getMessage());
             return Response
@@ -41,7 +32,6 @@ public class RoutingResource {
                     .entity("{\"error\": \"Error occurred while calling target instance.\"}")
                     .type(MediaType.APPLICATION_JSON)
                     .build();
-
         }
     }
 

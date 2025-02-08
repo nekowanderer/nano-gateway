@@ -1,5 +1,6 @@
-package idv.clu.api.common;
+package idv.clu.api.client;
 
+import idv.clu.api.common.RoutingConfig;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class SimpleApiClientProviderTest {
+class RestClientProviderTest {
 
     @Test
     void testInitCreatesClientsSuccessfullyWithCreateClientMocked() {
@@ -19,7 +20,7 @@ class SimpleApiClientProviderTest {
         final List<String> mockInstances = List.of(instance1, instance2, instance3);
         when(mockRoutingConfig.getSimpleApiInstances()).thenReturn(mockInstances);
 
-        final SimpleApiClientProvider spyProvider = spy(new SimpleApiClientProvider());
+        final RestClientProvider spyProvider = spy(new RestClientProvider());
         spyProvider.routingConfig = mockRoutingConfig;
 
         final SimpleApiClient mockClient1 = mock(SimpleApiClient.class);
@@ -53,10 +54,9 @@ class SimpleApiClientProviderTest {
         final RoutingConfig routingConfig = mock(RoutingConfig.class);
         when(routingConfig.getSimpleApiInstances()).thenReturn(List.of());
 
-        final SimpleApiClientProvider provider = new SimpleApiClientProvider();
+        final RestClientProvider provider = new RestClientProvider();
         provider.routingConfig = routingConfig;
 
-        // Verify exception is thrown
         IllegalStateException exception = assertThrows(IllegalStateException.class, provider::init);
         assertEquals("No simple api instances configured.", exception.getMessage());
     }

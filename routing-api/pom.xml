@@ -13,6 +13,7 @@
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.18.2</quarkus.platform.version>
+        <okhttp-client.version>4.12.0</okhttp-client.version>
         <mockito-junit-jupiter.version>5.5.0</mockito-junit-jupiter.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
@@ -50,6 +51,11 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp-client.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
