@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -47,8 +48,6 @@ class OkHttpClientProviderTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
 
-        okHttpClientProvider.clientTimeoutThreshold = 100000L;
-
         when(retryStrategy.executeWithRetries(any()))
                 .thenAnswer(invocation -> {
                     Callable<Response> callable = invocation.getArgument(0);
@@ -79,18 +78,16 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        Response response = okHttpClientProvider.sendGetRequest(ROUTING_PATH);
+        HttpResult httpResult = okHttpClientProvider.sendGetRequest(ROUTING_PATH);
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals(MOCK_VALID_REQUEST_PAYLOAD, response.getEntity().toString());
+        assertNotNull(httpResult);
+        assertEquals(200, httpResult.getResponse().getStatus());
+        assertEquals(MOCK_VALID_REQUEST_PAYLOAD, httpResult.getResponse().getEntity().toString());
 
         verify(okHttpClient, times(1)).newCall(any(Request.class));
         verify(callMock, times(1)).execute();
         verify(routingStrategy, times(1)).getNextTargetUrl(ROUTING_PATH);
         verify(circuitBreaker, times(1)).allowRequest(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(1)).reportSuccess(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(0)).reportFailure(anyString());
     }
 
     @Test
@@ -111,18 +108,16 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        Response response = okHttpClientProvider.sendGetRequest(ROUTING_PATH);
+        HttpResult httpResult = okHttpClientProvider.sendGetRequest(ROUTING_PATH);
 
-        assertNotNull(response);
-        assertEquals(500, response.getStatus());
-        assertEquals("Error occurred", response.getEntity().toString());
+        assertNotNull(httpResult);
+        assertEquals(500, httpResult.getResponse().getStatus());
+        assertEquals("Error occurred", httpResult.getResponse().getEntity().toString());
 
         verify(okHttpClient, times(1)).newCall(any(Request.class));
         verify(callMock, times(1)).execute();
         verify(routingStrategy, times(1)).getNextTargetUrl(ROUTING_PATH);
         verify(circuitBreaker, times(1)).allowRequest(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(1)).reportSuccess(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(0)).reportFailure(anyString());
     }
 
     @Test
@@ -144,18 +139,16 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        Response response = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
+        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
 
-        assertNotNull(response);
-        assertEquals(201, response.getStatus());
-        assertEquals(MOCK_VALID_REQUEST_PAYLOAD, response.getEntity().toString());
+        assertNotNull(httpResult);
+        assertEquals(201, httpResult.getResponse().getStatus());
+        assertEquals(MOCK_VALID_REQUEST_PAYLOAD, httpResult.getResponse().getEntity().toString());
 
         verify(okHttpClient, times(1)).newCall(any(Request.class));
         verify(callMock, times(1)).execute();
         verify(routingStrategy, times(1)).getNextTargetUrl(ROUTING_PATH);
         verify(circuitBreaker, times(1)).allowRequest(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(1)).reportSuccess(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(0)).reportFailure(anyString());
     }
 
     @Test
@@ -177,18 +170,51 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        Response response = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_INVALID_REQUEST_PAYLOAD);
+        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_INVALID_REQUEST_PAYLOAD);
 
-        assertNotNull(response);
-        assertEquals(400, response.getStatus());
-        assertEquals(MOCK_INVALID_REQUEST_PAYLOAD, response.getEntity().toString());
+        assertNotNull(httpResult);
+        assertEquals(400, httpResult.getResponse().getStatus());
+        assertEquals(MOCK_INVALID_REQUEST_PAYLOAD, httpResult.getResponse().getEntity().toString());
 
         verify(okHttpClient, times(1)).newCall(any(Request.class));
         verify(callMock, times(1)).execute();
         verify(routingStrategy, times(1)).getNextTargetUrl(ROUTING_PATH);
         verify(circuitBreaker, times(1)).allowRequest(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(1)).reportSuccess(MOCK_INSTANCES.get(0) + ROUTING_PATH);
-        verify(circuitBreaker, times(0)).reportFailure(anyString());
+    }
+
+    @Test
+    @DisplayName("Test handling of SocketTimeoutException during POST request")
+    void testHandleSocketTimeoutException() throws Exception {
+        Call callMock = mock(Call.class);
+        when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
+        when(callMock.execute()).thenThrow(new SocketTimeoutException("Socket timeout exception"));
+
+        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
+
+        assertNotNull(httpResult);
+        assertInstanceOf(ClientTimeoutException.class, httpResult.getException());
+    }
+
+    @Test
+    @DisplayName("Test handling of CircuitBreakerOpenException during POST request")
+    void testHandleCircuitBreakerOpenException() {
+        when(circuitBreaker.allowRequest(anyString())).thenReturn(false);
+
+        assertThrows(CircuitBreakerOpenException.class,
+                () -> okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD));
+    }
+
+    @Test
+    @DisplayName("Test handling of ClientHttpRequestException during POST request")
+    void testHandleClientHttpRequestException() throws Exception {
+        Call callMock = mock(Call.class);
+        when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
+        when(callMock.execute()).thenThrow(new IllegalStateException("IllegalState exception"));
+
+        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
+
+        assertNotNull(httpResult);
+        assertInstanceOf(ClientHttpRequestException.class, httpResult.getException());
     }
 
 }

@@ -6,11 +6,11 @@ import idv.clu.api.strategy.routing.RoutingStrategy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import okhttp3.*;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 /**
@@ -21,11 +21,6 @@ public class OkHttpClientProvider {
 
     private final static Logger LOG = LoggerFactory.getLogger(OkHttpClientProvider.class);
     private final static MediaType APPLICATION_JSON =  MediaType.parse(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
-    private final static int MAX_ATTEMPTS = 3;
-
-    @Inject
-    @ConfigProperty(name = "client.timeout.threshold", defaultValue = "10000")
-    long clientTimeoutThreshold;
 
     @Inject
     OkHttpClient client;
@@ -39,89 +34,53 @@ public class OkHttpClientProvider {
     @Inject
     CircuitBreaker circuitBreaker;
 
-    public jakarta.ws.rs.core.Response sendGetRequest(String path) throws Exception {
-        int attempts = 0;
-
-        while (attempts < MAX_ATTEMPTS) {
-            final String targetUrl = routingStrategy.getNextTargetUrl(path);
-
-            if (!circuitBreaker.allowRequest(targetUrl)) {
-                LOG.warn("Request blocked by circuit breaker: {}", targetUrl);
-                attempts++;
-                continue;
-            }
-
-            try {
-                return retryStrategy.executeWithRetries(() -> {
-                    LOG.info("Sending GET request to: {}", targetUrl);
-
-                    long startTime = System.currentTimeMillis();
-                    Request request = new Request.Builder().url(targetUrl).get().build();
-                    okhttp3.Response okHttpResponse = client.newCall(request).execute();
-                    long responseTime = System.currentTimeMillis() - startTime;
-
-                    if (responseTime > clientTimeoutThreshold) {
-                        LOG.warn("Request to {} exceeded timeout threshold ({} ms).", targetUrl, clientTimeoutThreshold);
-                        circuitBreaker.reportFailure(targetUrl);
-                        return fallbackResponse();
-                    }
-
-                    circuitBreaker.reportSuccess(targetUrl);
-                    return toJakartaResponse(okHttpResponse);
-                });
-            } catch (Exception e) {
-                LOG.error("Request to {} failed: {}", targetUrl, e.getMessage());
-                circuitBreaker.reportFailure(targetUrl);
-                throw e;
-            }
-        }
-
-        LOG.error("All target URLs are either blocked or failed.");
-        return fallbackResponse();
+    @FunctionalInterface
+    private interface RequestBuilder {
+        Request build();
     }
 
-    public jakarta.ws.rs.core.Response sendPostRequest(String path, String payload) throws Exception {
-        int attempts = 0;
+    public HttpResult sendGetRequest(String path) {
+        return sendRequest(() -> new Request.Builder()
+                .url(routingStrategy.getNextTargetUrl(path))
+                .get()
+                .build());
+    }
 
-        while (attempts < MAX_ATTEMPTS) {
-            final String targetUrl = routingStrategy.getNextTargetUrl(path);
+    public HttpResult sendPostRequest(String path, String payload) {
+        return sendRequest(() -> new Request.Builder()
+                .url(routingStrategy.getNextTargetUrl(path))
+                .post(RequestBody.create(payload, APPLICATION_JSON))
+                .build());
+    }
 
-            if (!circuitBreaker.allowRequest(targetUrl)) {
-                LOG.warn("Request blocked by circuit breaker: {}", targetUrl);
-                attempts++;
-                continue;
-            }
+    private HttpResult sendRequest(RequestBuilder requestBuilder) {
+        Request request = requestBuilder.build();
+        String targetUrl = request.url().toString();
 
-            try {
-                return retryStrategy.executeWithRetries(() -> {
-                    LOG.info("Sending POST request to: {}", targetUrl);
-
-                    long startTime = System.currentTimeMillis();
-                    Request request = new Request.Builder()
-                            .url(targetUrl)
-                            .post(RequestBody.create(payload, APPLICATION_JSON))
-                            .build();
-                    okhttp3.Response okHttpResponse = client.newCall(request).execute();
-                    long responseTime = System.currentTimeMillis() - startTime;
-
-                    if (responseTime > clientTimeoutThreshold) {
-                        LOG.warn("Request to {} exceeded timeout threshold ({} ms).", targetUrl, clientTimeoutThreshold);
-                        circuitBreaker.reportFailure(targetUrl);
-                        return fallbackResponse();
-                    }
-
-                    circuitBreaker.reportSuccess(targetUrl);
-                    return toJakartaResponse(okHttpResponse);
-                });
-            } catch (Exception e) {
-                LOG.error("Request to {} failed: {}", targetUrl, e.getMessage());
-                circuitBreaker.reportFailure(targetUrl);
-                throw e;
-            }
+        if (!circuitBreaker.allowRequest(targetUrl)) {
+            throw new CircuitBreakerOpenException(targetUrl);
         }
 
-        LOG.error("All target URLs are either blocked or failed.");
-        return fallbackResponse();
+        try {
+            jakarta.ws.rs.core.Response response = retryStrategy.executeWithRetries(() -> {
+                LOG.debug("Sending POST request to: {}", targetUrl);
+                okhttp3.Response okHttpResponse = client.newCall(request).execute();
+                return toJakartaResponse(okHttpResponse);
+            });
+
+            return new HttpResult(targetUrl, response);
+        } catch (SocketTimeoutException timeoutException) {
+            final String logMessage = String.format("Request to %s timed out.", targetUrl);
+            LOG.warn(logMessage);
+            ClientTimeoutException clientTimeoutException = new ClientTimeoutException(logMessage);
+            return new HttpResult(targetUrl, clientTimeoutException);
+        } catch (CircuitBreakerOpenException circuitBreakerOpenException) {
+            throw circuitBreakerOpenException;
+        } catch (Exception exception) {
+            String logMessage = String.format("Failed to send request to %s.", targetUrl);
+            LOG.error("{} Detail exception: {}.", logMessage, exception.toString());
+            return new HttpResult(targetUrl, new ClientHttpRequestException(logMessage, exception));
+        }
     }
 
     jakarta.ws.rs.core.Response toJakartaResponse(Response okHttpResponse) throws IOException {
@@ -136,13 +95,6 @@ public class OkHttpClientProvider {
         return jakarta.ws.rs.core.Response.status(statusCode)
                 .entity(entity)
                 .type(mediaType)
-                .build();
-    }
-
-    private jakarta.ws.rs.core.Response fallbackResponse() {
-        return jakarta.ws.rs.core.Response
-                .status(503)
-                .entity("{\"message\":\"Service unavailable\"}")
                 .build();
     }
 

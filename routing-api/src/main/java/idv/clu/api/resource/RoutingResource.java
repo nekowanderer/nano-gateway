@@ -1,6 +1,6 @@
 package idv.clu.api.resource;
 
-import idv.clu.api.client.OkHttpClientProvider;
+import idv.clu.api.client.ApiInvoker;
 import idv.clu.api.client.SimpleApiResource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -17,14 +17,30 @@ public class RoutingResource {
     private final static Logger LOG = LoggerFactory.getLogger(RoutingResource.class);
 
     @Inject
-    OkHttpClientProvider okHttpClientProvider;
+    ApiInvoker apiInvoker;
 
     @POST
-    @Path("/simple_api")
+    @Path("/simple_api/echo")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response simpleApiRoute(String requestPayload) {
+    public Response simpleApiEchoRoute(String requestPayload) {
         try {
-            return okHttpClientProvider.sendPostRequest(SimpleApiResource.getSimpleApiEchoUrl(), requestPayload);
+            return apiInvoker.invokePost(SimpleApiResource.getSimpleApiEchoUrl(), requestPayload);
+        } catch (Exception e) {
+            LOG.error("Error occurred while calling target instance: {}", e.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Error occurred while calling target instance.\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("/simple_api/delay")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response simpleApiDelayRoute(String requestPayload) {
+        try {
+            return apiInvoker.invokePost(SimpleApiResource.getSimpleApiDelayUrl(), requestPayload);
         } catch (Exception e) {
             LOG.error("Error occurred while calling target instance: {}", e.getMessage());
             return Response

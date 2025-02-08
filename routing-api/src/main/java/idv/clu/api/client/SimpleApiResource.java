@@ -7,7 +7,8 @@ public enum SimpleApiResource {
 
     BASE_URL("/simple-api"),
     REST_RESOURCE("rest_resource"),
-    ECHO_ENDPOINT("echo");
+    ECHO_ENDPOINT("echo"),
+    DELAY_ENDPOINT("delay");
 
     private final String value;
 
@@ -35,6 +36,14 @@ public enum SimpleApiResource {
                 SimpleApiResource.BASE_URL,
                 SimpleApiResource.REST_RESOURCE,
                 SimpleApiResource.ECHO_ENDPOINT
+        );
+    }
+
+    public static String getSimpleApiDelayUrl() {
+        return SimpleApiResource.buildPath(
+                SimpleApiResource.BASE_URL,
+                SimpleApiResource.REST_RESOURCE,
+                SimpleApiResource.DELAY_ENDPOINT
         );
     }
 

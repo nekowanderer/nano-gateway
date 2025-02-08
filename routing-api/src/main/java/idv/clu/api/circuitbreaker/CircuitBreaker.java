@@ -3,6 +3,8 @@ package idv.clu.api.circuitbreaker;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @ApplicationScoped
 public class CircuitBreaker {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CircuitBreaker.class);
 
     final ConcurrentHashMap<String, CircuitContext> endpointContextList = new ConcurrentHashMap<>();
     final ConcurrentHashMap<String, CircuitState> endpointStates = new ConcurrentHashMap<>();
@@ -52,6 +56,8 @@ public class CircuitBreaker {
 
         CircuitState newState = state.recordFailure(System.currentTimeMillis(), context);
         endpointStates.put(endpoint, newState);
+
+        LOG.debug("Circuit breaker enabled for endpoint: {}", endpoint);
     }
 
 }
