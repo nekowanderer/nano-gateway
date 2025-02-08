@@ -18,7 +18,7 @@ class RestClientProviderTest {
 
         final RoutingConfig mockRoutingConfig = mock(RoutingConfig.class);
         final List<String> mockInstances = List.of(instance1, instance2, instance3);
-        when(mockRoutingConfig.getSimpleApiInstances()).thenReturn(mockInstances);
+        when(mockRoutingConfig.getAvailableInstances()).thenReturn(mockInstances);
 
         final RestClientProvider spyProvider = spy(new RestClientProvider());
         spyProvider.routingConfig = mockRoutingConfig;
@@ -52,7 +52,7 @@ class RestClientProviderTest {
     @Test
     void testInitThrowsExceptionWhenNoInstancesConfigured() {
         final RoutingConfig routingConfig = mock(RoutingConfig.class);
-        when(routingConfig.getSimpleApiInstances()).thenReturn(List.of());
+        when(routingConfig.getAvailableInstances()).thenReturn(List.of());
 
         final RestClientProvider provider = new RestClientProvider();
         provider.routingConfig = routingConfig;

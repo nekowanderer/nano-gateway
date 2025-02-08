@@ -5,8 +5,6 @@ import idv.clu.api.client.SimpleApiResource;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -14,7 +12,7 @@ import static org.mockito.Mockito.*;
 class RoutingResourceTest {
 
     @Test
-    void testSimpleApiRoute_SuccessfulResponse() throws IOException {
+    void testSimpleApiRoute_SuccessfulResponse() throws Exception {
         OkHttpClientProvider mockClientProvider = mock(OkHttpClientProvider.class);
         RoutingResource routingResource = new RoutingResource();
         routingResource.okHttpClientProvider = mockClientProvider;
@@ -33,7 +31,7 @@ class RoutingResourceTest {
     }
 
     @Test
-    void testSimpleApiRoute_InternalServerError() throws IOException {
+    void testSimpleApiRoute_InternalServerError() throws Exception {
         OkHttpClientProvider mockClientProvider = mock(OkHttpClientProvider.class);
         RoutingResource routingResource = new RoutingResource();
         routingResource.okHttpClientProvider = mockClientProvider;

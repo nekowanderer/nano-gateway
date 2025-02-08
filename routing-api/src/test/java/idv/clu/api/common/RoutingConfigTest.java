@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class RoutingConfigTest {
 
     @Test
-    void testGetSimpleApiInstancesWithValidInput() {
+    void testGetAvailableInstancesWithValidInput() {
         RoutingConfig routingConfig = new RoutingConfig();
         routingConfig.apiInstances = "instance1,instance2,instance3";
 
-        List<String> result = routingConfig.getSimpleApiInstances();
+        List<String> result = routingConfig.getAvailableInstances();
 
         assertNotNull(result, "Result should not be null");
         assertEquals(3, result.size(), "Expected 3 instances in the list");
@@ -23,11 +23,11 @@ class RoutingConfigTest {
     }
 
     @Test
-    void testGetSimpleApiInstancesWithSingleInstance() {
+    void testGetAvailableInstancesWithSingleInstance() {
         RoutingConfig routingConfig = new RoutingConfig();
         routingConfig.apiInstances = "singleInstance";
 
-        List<String> result = routingConfig.getSimpleApiInstances();
+        List<String> result = routingConfig.getAvailableInstances();
 
         assertNotNull(result, "Result should not be null");
         assertEquals(1, result.size(), "Expected 1 instance in the list");
@@ -35,11 +35,11 @@ class RoutingConfigTest {
     }
 
     @Test
-    void testGetSimpleApiInstancesWithEmptyString() {
+    void testGetAvailableInstancesWithEmptyString() {
         RoutingConfig routingConfig = new RoutingConfig();
         routingConfig.apiInstances = "";
 
-        List<String> result = routingConfig.getSimpleApiInstances();
+        List<String> result = routingConfig.getAvailableInstances();
 
         assertNotNull(result, "Result should not be null");
         assertEquals(1, result.size(), "Expected 1 element in the list for empty string");
@@ -47,11 +47,11 @@ class RoutingConfigTest {
     }
 
     @Test
-    void testGetSimpleApiInstancesWithWhitespace() {
+    void testGetAvailableInstancesWithWhitespace() {
         RoutingConfig routingConfig = new RoutingConfig();
         routingConfig.apiInstances = "   ";
 
-        List<String> result = routingConfig.getSimpleApiInstances();
+        List<String> result = routingConfig.getAvailableInstances();
 
         assertNotNull(result, "Result should not be null");
         assertEquals(1, result.size(), "Expected 1 element in the list for whitespace");
@@ -59,11 +59,11 @@ class RoutingConfigTest {
     }
 
     @Test
-    void testGetSimpleApiInstancesWithTrailingCommas() {
+    void testGetAvailableInstancesWithTrailingCommas() {
         RoutingConfig routingConfig = new RoutingConfig();
         routingConfig.apiInstances = "instance1,instance2,";
 
-        List<String> result = routingConfig.getSimpleApiInstances();
+        List<String> result = routingConfig.getAvailableInstances();
 
         assertNotNull(result, "Result should not be null");
         assertEquals(2, result.size(), "Expected 2 elements");

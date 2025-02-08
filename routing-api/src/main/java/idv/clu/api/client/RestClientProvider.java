@@ -31,7 +31,7 @@ public class RestClientProvider {
     @PostConstruct
     void init() {
         index = new AtomicInteger(0);
-        List<String> instances = routingConfig.getSimpleApiInstances();
+        List<String> instances = routingConfig.getAvailableInstances();
         if (instances.isEmpty()) {
             throw new IllegalStateException("No simple api instances configured.");
         }

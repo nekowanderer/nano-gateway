@@ -12,10 +12,10 @@ import java.util.List;
 @ApplicationScoped
 public class RoutingConfig {
 
-    @ConfigProperty(name = "SIMPLE_API_INSTANCES")
+    @ConfigProperty(name = "AVAILABLE_API_INSTANCES")
     String apiInstances;
 
-    public List<String> getSimpleApiInstances() {
+    public List<String> getAvailableInstances() {
         return Arrays.asList(apiInstances.split(","));
     }
 
