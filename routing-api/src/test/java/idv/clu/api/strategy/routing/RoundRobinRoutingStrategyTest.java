@@ -1,6 +1,6 @@
 package idv.clu.api.strategy.routing;
 
-import idv.clu.api.client.SimpleApiResource;
+import idv.clu.api.client.enums.SimpleApiResource;
 import idv.clu.api.common.RoutingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

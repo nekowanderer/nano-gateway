@@ -5,6 +5,16 @@
     <artifactId>simple-api</artifactId>
     <version>1.0.0</version>
 
+    <name>simple-api</name>
+    <description>Small POC for demonstrating the RESTful API.</description>
+    <contributors>
+        <contributor>
+            <name>Carl Lu</name>
+            <email>clu@wandrers.one</email>
+            <url>https://www.cakeresume.com/clu</url>
+        </contributor>
+    </contributors>
+
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>

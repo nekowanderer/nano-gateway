@@ -1,6 +1,11 @@
-package idv.clu.api.client;
+package idv.clu.api.client.provider;
 
 import idv.clu.api.circuitbreaker.CircuitBreaker;
+import idv.clu.api.client.enums.SimpleApiResource;
+import idv.clu.api.client.exception.CircuitBreakerOpenException;
+import idv.clu.api.client.exception.ClientHttpRequestException;
+import idv.clu.api.client.exception.ClientTimeoutException;
+import idv.clu.api.client.model.HttpResult;
 import idv.clu.api.strategy.retry.RetryStrategy;
 import idv.clu.api.strategy.routing.RoutingStrategy;
 import jakarta.ws.rs.core.Response;

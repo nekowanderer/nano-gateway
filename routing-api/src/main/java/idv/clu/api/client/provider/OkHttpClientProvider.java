@@ -1,6 +1,10 @@
-package idv.clu.api.client;
+package idv.clu.api.client.provider;
 
 import idv.clu.api.circuitbreaker.CircuitBreaker;
+import idv.clu.api.client.exception.CircuitBreakerOpenException;
+import idv.clu.api.client.exception.ClientHttpRequestException;
+import idv.clu.api.client.exception.ClientTimeoutException;
+import idv.clu.api.client.model.HttpResult;
 import idv.clu.api.strategy.retry.RetryStrategy;
 import idv.clu.api.strategy.routing.RoutingStrategy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,14 +43,14 @@ public class OkHttpClientProvider {
         Request build();
     }
 
-    HttpResult sendGetRequest(String path) {
+    public HttpResult sendGetRequest(String path) {
         return sendRequest(() -> new Request.Builder()
                 .url(routingStrategy.getNextTargetUrl(path))
                 .get()
                 .build());
     }
 
-    HttpResult sendPostRequest(String path, String payload) {
+    public HttpResult sendPostRequest(String path, String payload) {
         return sendRequest(() -> new Request.Builder()
                 .url(routingStrategy.getNextTargetUrl(path))
                 .post(RequestBody.create(payload, APPLICATION_JSON))

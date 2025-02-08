@@ -1,8 +1,10 @@
 package idv.clu.api.client;
 
 import idv.clu.api.circuitbreaker.CircuitBreaker;
+import idv.clu.api.client.exception.CircuitBreakerOpenException;
+import idv.clu.api.client.model.HttpResult;
+import idv.clu.api.client.provider.OkHttpClientProvider;
 import jakarta.ws.rs.core.Response;
-import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

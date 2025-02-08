@@ -1,4 +1,4 @@
-package idv.clu.api.client;
+package idv.clu.api.client.enums;
 
 import org.junit.jupiter.api.Test;
 

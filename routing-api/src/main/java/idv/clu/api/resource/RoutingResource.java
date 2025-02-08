@@ -1,7 +1,7 @@
 package idv.clu.api.resource;
 
 import idv.clu.api.client.ApiInvoker;
-import idv.clu.api.client.SimpleApiResource;
+import idv.clu.api.client.enums.SimpleApiResource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;

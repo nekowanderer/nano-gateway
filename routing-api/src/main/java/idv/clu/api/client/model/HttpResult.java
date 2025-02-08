@@ -1,4 +1,4 @@
-package idv.clu.api.client;
+package idv.clu.api.client.model;
 
 import jakarta.ws.rs.core.Response;
 

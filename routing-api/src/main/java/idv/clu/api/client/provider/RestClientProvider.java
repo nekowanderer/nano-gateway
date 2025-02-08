@@ -1,5 +1,6 @@
-package idv.clu.api.client;
+package idv.clu.api.client.provider;
 
+import idv.clu.api.client.SimpleApiClient;
 import idv.clu.api.common.RoutingConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
