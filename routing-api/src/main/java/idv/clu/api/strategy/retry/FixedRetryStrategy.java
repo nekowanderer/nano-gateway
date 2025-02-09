@@ -10,10 +10,11 @@ import java.util.concurrent.Callable;
  * @author clu
  */
 @ApplicationScoped
+@RetryStrategyType(RetryStrategyType.Strategy.FIXED_DELAY)
 public class FixedRetryStrategy implements RetryStrategy {
 
     @Inject
-    @ConfigProperty(name = "strategy.retry.max.count", defaultValue = "3")
+    @ConfigProperty(name = "strategy.retry.fixed.max.count", defaultValue = "3")
     int maxRetryCount;
 
     @SuppressWarnings("unused")

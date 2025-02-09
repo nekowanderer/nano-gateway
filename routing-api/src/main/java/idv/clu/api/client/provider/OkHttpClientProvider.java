@@ -6,6 +6,7 @@ import idv.clu.api.client.exception.ClientHttpRequestException;
 import idv.clu.api.client.exception.ClientTimeoutException;
 import idv.clu.api.client.model.HttpResult;
 import idv.clu.api.strategy.retry.RetryStrategy;
+import idv.clu.api.strategy.retry.RetryStrategyType;
 import idv.clu.api.strategy.routing.RoutingStrategy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,6 +31,7 @@ public class OkHttpClientProvider {
     OkHttpClient client;
 
     @Inject
+    @RetryStrategyType(RetryStrategyType.Strategy.FIXED_DELAY)
     RetryStrategy retryStrategy;
 
     @Inject
