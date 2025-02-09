@@ -27,7 +27,7 @@ public class RoundRobinRoutingStrategy implements RoutingStrategy {
 
     @PostConstruct
     public void init() {
-        LOG.info("Initializing OkHttpClientProvider...");
+        LOG.info("Initializing RoundRobinRoutingStrategy.");
 
         this.availableInstances = routingConfig.getAvailableInstances();
 

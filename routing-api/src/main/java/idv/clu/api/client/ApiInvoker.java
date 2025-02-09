@@ -4,7 +4,7 @@ import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;
 import idv.clu.api.client.exception.ClientTimeoutException;
 import idv.clu.api.client.model.HttpResult;
-import idv.clu.api.client.provider.OkHttpClientProvider;
+import idv.clu.api.client.provider.HttpRequestExecutor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
@@ -25,17 +25,17 @@ public class ApiInvoker {
     int maxRetryCount;
 
     @Inject
-    OkHttpClientProvider httpClientProvider;
+    HttpRequestExecutor httpRequestExecutor;
 
     @Inject
     CircuitBreaker circuitBreaker;
 
     public Response invokeGet(String path) throws Exception {
-        return invoke(() -> httpClientProvider.sendGetRequest(path));
+        return invoke(() -> httpRequestExecutor.sendGetRequest(path));
     }
 
     public Response invokePost(String path, String payload) throws Exception {
-        return invoke(() -> httpClientProvider.sendPostRequest(path, payload));
+        return invoke(() -> httpRequestExecutor.sendPostRequest(path, payload));
     }
 
     private Response invoke(ApiCall apiCall) throws Exception {

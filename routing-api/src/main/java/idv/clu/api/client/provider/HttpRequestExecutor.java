@@ -22,9 +22,9 @@ import java.util.Objects;
  * @author clu
  */
 @ApplicationScoped
-public class OkHttpClientProvider {
+public class HttpRequestExecutor {
 
-    private final static Logger LOG = LoggerFactory.getLogger(OkHttpClientProvider.class);
+    private final static Logger LOG = LoggerFactory.getLogger(HttpRequestExecutor.class);
     private final static MediaType APPLICATION_JSON =  MediaType.parse(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
 
     @Inject

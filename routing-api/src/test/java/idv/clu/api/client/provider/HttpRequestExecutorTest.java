@@ -24,8 +24,8 @@ import java.util.concurrent.Callable;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("OkHttpClientProvider Test Suite")
-class OkHttpClientProviderTest {
+@DisplayName("HttpRequestExecutor Test Suite")
+class HttpRequestExecutorTest {
 
     private final static MediaType APPLICATION_JSON = MediaType.get(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
     private final static List<String> MOCK_INSTANCES =
@@ -47,7 +47,7 @@ class OkHttpClientProviderTest {
     private CircuitBreaker circuitBreaker;
 
     @InjectMocks
-    private OkHttpClientProvider okHttpClientProvider;
+    private HttpRequestExecutor httpRequestExecutor;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -83,7 +83,7 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        HttpResult httpResult = okHttpClientProvider.sendGetRequest(ROUTING_PATH);
+        HttpResult httpResult = httpRequestExecutor.sendGetRequest(ROUTING_PATH);
 
         assertNotNull(httpResult);
         assertEquals(200, httpResult.getResponse().getStatus());
@@ -113,7 +113,7 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        HttpResult httpResult = okHttpClientProvider.sendGetRequest(ROUTING_PATH);
+        HttpResult httpResult = httpRequestExecutor.sendGetRequest(ROUTING_PATH);
 
         assertNotNull(httpResult);
         assertEquals(500, httpResult.getResponse().getStatus());
@@ -144,7 +144,7 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
+        HttpResult httpResult = httpRequestExecutor.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
 
         assertNotNull(httpResult);
         assertEquals(201, httpResult.getResponse().getStatus());
@@ -175,7 +175,7 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenReturn(realResponse);
 
-        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_INVALID_REQUEST_PAYLOAD);
+        HttpResult httpResult = httpRequestExecutor.sendPostRequest(ROUTING_PATH, MOCK_INVALID_REQUEST_PAYLOAD);
 
         assertNotNull(httpResult);
         assertEquals(400, httpResult.getResponse().getStatus());
@@ -194,7 +194,7 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenThrow(new SocketTimeoutException("Socket timeout exception"));
 
-        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
+        HttpResult httpResult = httpRequestExecutor.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
 
         assertNotNull(httpResult);
         assertInstanceOf(ClientTimeoutException.class, httpResult.getException());
@@ -206,7 +206,7 @@ class OkHttpClientProviderTest {
         when(circuitBreaker.allowRequest(anyString())).thenReturn(false);
 
         assertThrows(CircuitBreakerOpenException.class,
-                () -> okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD));
+                () -> httpRequestExecutor.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD));
     }
 
     @Test
@@ -216,7 +216,7 @@ class OkHttpClientProviderTest {
         when(okHttpClient.newCall(any(Request.class))).thenReturn(callMock);
         when(callMock.execute()).thenThrow(new IllegalStateException("IllegalState exception"));
 
-        HttpResult httpResult = okHttpClientProvider.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
+        HttpResult httpResult = httpRequestExecutor.sendPostRequest(ROUTING_PATH, MOCK_VALID_REQUEST_PAYLOAD);
 
         assertNotNull(httpResult);
         assertInstanceOf(ClientHttpRequestException.class, httpResult.getException());

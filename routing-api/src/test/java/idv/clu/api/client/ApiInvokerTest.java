@@ -3,8 +3,7 @@ package idv.clu.api.client;
 import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;
 import idv.clu.api.client.model.HttpResult;
-import idv.clu.api.client.provider.OkHttpClientProvider;
-import idv.clu.api.strategy.retry.RetryStrategy;
+import idv.clu.api.client.provider.HttpRequestExecutor;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.*;
 class ApiInvokerTest {
 
     @Mock
-    private OkHttpClientProvider httpClientProvider;
+    private HttpRequestExecutor httpRequestExecutor;
 
     @Mock
     private CircuitBreaker circuitBreaker;
@@ -35,7 +34,7 @@ class ApiInvokerTest {
     void invokeGet_SuccessfulResponse() throws Exception {
         HttpResult httpResult = mock(HttpResult.class);
         Response expectedResponse = Response.ok().build();
-        when(httpClientProvider.sendGetRequest(anyString())).thenReturn(httpResult);
+        when(httpRequestExecutor.sendGetRequest(anyString())).thenReturn(httpResult);
         when(httpResult.hasResponse()).thenReturn(true);
         when(httpResult.getResponse()).thenReturn(expectedResponse);
         when(httpResult.getEndpoint()).thenReturn("https://example.com");
@@ -50,7 +49,7 @@ class ApiInvokerTest {
     void invokeGet_FailedResponseThenFallback() throws Exception {
         HttpResult httpResult = mock(HttpResult.class);
         Exception exception = new Exception("Test exception");
-        when(httpClientProvider.sendGetRequest(anyString())).thenReturn(httpResult);
+        when(httpRequestExecutor.sendGetRequest(anyString())).thenReturn(httpResult);
         when(httpResult.hasResponse()).thenReturn(false);
         when(httpResult.getException()).thenReturn(exception);
         when(httpResult.getEndpoint()).thenReturn("https://example.com");
@@ -63,7 +62,7 @@ class ApiInvokerTest {
 
     @Test
     void invokeGet_CircuitBreakerOpenRetries() throws Exception {
-        when(httpClientProvider.sendGetRequest(anyString())).thenThrow(new CircuitBreakerOpenException("https://example.com"));
+        when(httpRequestExecutor.sendGetRequest(anyString())).thenThrow(new CircuitBreakerOpenException("https://example.com"));
 
         Response fallbackResponse = apiInvoker.invokeGet("/test");
 
@@ -73,7 +72,7 @@ class ApiInvokerTest {
 
     @Test
     void invokeGet_UnexpectedException() throws Exception {
-        when(httpClientProvider.sendGetRequest(anyString())).thenThrow(new RuntimeException("Unexpected error"));
+        when(httpRequestExecutor.sendGetRequest(anyString())).thenThrow(new RuntimeException("Unexpected error"));
 
         Response fallbackResponse = apiInvoker.invokeGet("/test");
 
