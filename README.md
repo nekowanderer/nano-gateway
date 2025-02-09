@@ -52,8 +52,10 @@ docker compose up --build
 - Implement the RESTful endpoints with JAX-RS (Jakarta REST).
 - Implement the RESTful client with OkHttpClient.
 - For launching multiple instances of simple-api, we can directly duplicate the `simple_api_n` service block in the `docker-compose.yml`, make sure the suffix number is updated to the correct one and add the new port number in the `.env` file accordingly.
-- For configuring the round-robin API list, we can pass the environment variable `AVAILABLE_API_INSTANCES` with comma-separated values in the `docker-compose.yml` under the `routing_api` service block which represents each host of the app, like the following screenshot: 
-  - <img src="https://github.com/user-attachments/assets/7d10ec45-7693-4563-8d1e-aa41569d9a90" width=100% height=100%> 
+- For configuring the round-robin API list, set the environment variable `AVAILABLE_API_INSTANCES` with comma-separated values in the `.env` file, this variable represents each host of the app, like the following screenshot (Please ensure the port here align with the container port inside the docker-compose.yml file): 
+  - <img src="https://github.com/user-attachments/assets/d71c3515-a62a-4d6e-8660-07d5124682da" width=100% height=100%> 
+- With the instance list configured, make sure it's set in the `routing-api` block of the `docker-compose.yml`:    
+  - <img src="https://github.com/user-attachments/assets/7d20359c-2baa-4f6d-af10-68decbb79eeb" width=60% height=100%>
 - Implement a retry mechanism for handling endpoint temporary unavailability/too busy/low-response rate. 
 - Implement a circuit breaker for traffic control and dispatch handling.
 - For timeout detection threshold, please adjust the property values of `client.timeout.*` in the application.properties of routing-api. By default, the `client.timeout.read` is `5` seconds (`5000` milliseconds). 
