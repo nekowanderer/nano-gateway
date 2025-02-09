@@ -57,7 +57,7 @@ class ExponentialBackoffRetryStrategyTest {
 
         ExponentialBackoffRetryStrategy retryStrategy = new ExponentialBackoffRetryStrategy(0, 100);
 
-        AssertionError assertionError = assertThrows(AssertionError.class, () -> retryStrategy.executeWithRetries(callable));
+        assertThrows(AssertionError.class, () -> retryStrategy.executeWithRetries(callable));
         verify(callable, times(0)).call();
     }
 

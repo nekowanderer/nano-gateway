@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 class RoutingResourceTest {
 
     @Test
-    void testSimpleApiRoute_SuccessfulResponse() throws Exception {
+    void testSimpleApiRouteSuccessfulResponse() throws Exception {
         ApiInvoker mockApiInvoker = mock(ApiInvoker.class);
         RoutingResource routingResource = new RoutingResource();
         routingResource.apiInvoker = mockApiInvoker;
@@ -31,7 +31,7 @@ class RoutingResourceTest {
     }
 
     @Test
-    void testSimpleApiRoute_InternalServerError() throws Exception {
+    void testSimpleApiRouteInternalServerError() throws Exception {
         ApiInvoker mockApiInvoker = mock(ApiInvoker.class);
         RoutingResource routingResource = new RoutingResource();
         routingResource.apiInvoker = mockApiInvoker;
@@ -50,7 +50,7 @@ class RoutingResourceTest {
     }
 
     @Test
-    void testSimpleApiDelayRoute_SuccessfulResponse() throws Exception {
+    void testSimpleApiDelayRouteSuccessfulResponse() throws Exception {
         ApiInvoker mockApiInvoker = mock(ApiInvoker.class);
         RoutingResource routingResource = new RoutingResource();
         routingResource.apiInvoker = mockApiInvoker;
@@ -69,7 +69,7 @@ class RoutingResourceTest {
     }
 
     @Test
-    void testSimpleApiDelayRoute_InternalServerError() throws Exception {
+    void testSimpleApiDelayRouteInternalServerError() throws Exception {
         ApiInvoker mockApiInvoker = mock(ApiInvoker.class);
         RoutingResource routingResource = new RoutingResource();
         routingResource.apiInvoker = mockApiInvoker;

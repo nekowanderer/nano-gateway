@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ApplicationContextTest {
 
     @Test
-    void okHttpClient_shouldBuildOkHttpClientWithConfiguration() {
+    void okHttpClientShouldBuildOkHttpClientWithConfiguration() {
         ApplicationContext applicationContext = new ApplicationContext();
         applicationContext.connectTimeout = 5000;
         applicationContext.readTimeout = 10000;

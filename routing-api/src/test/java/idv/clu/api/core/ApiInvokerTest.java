@@ -31,7 +31,7 @@ class ApiInvokerTest {
     }
 
     @Test
-    void invokeGet_SuccessfulResponse() throws Exception {
+    void invokeGetSuccessfulResponse() throws Exception {
         HttpResult httpResult = mock(HttpResult.class);
         Response expectedResponse = Response.ok().build();
         when(httpRequestExecutor.sendGetRequest(anyString())).thenReturn(httpResult);
@@ -46,7 +46,7 @@ class ApiInvokerTest {
     }
 
     @Test
-    void invokeGet_FailedResponseThenFallback() throws Exception {
+    void invokeGetFailedResponseThenFallback() throws Exception {
         HttpResult httpResult = mock(HttpResult.class);
         Exception exception = new Exception("Test exception");
         when(httpRequestExecutor.sendGetRequest(anyString())).thenReturn(httpResult);
@@ -61,7 +61,7 @@ class ApiInvokerTest {
     }
 
     @Test
-    void invokeGet_CircuitBreakerOpenRetries() throws Exception {
+    void invokeGetCircuitBreakerOpenRetries() throws Exception {
         when(httpRequestExecutor.sendGetRequest(anyString())).thenThrow(new CircuitBreakerOpenException("https://example.com"));
 
         Response fallbackResponse = apiInvoker.invokeGet("/test");
@@ -71,7 +71,7 @@ class ApiInvokerTest {
     }
 
     @Test
-    void invokeGet_UnexpectedException() throws Exception {
+    void invokeGetUnexpectedException() throws Exception {
         when(httpRequestExecutor.sendGetRequest(anyString())).thenThrow(new RuntimeException("Unexpected error"));
 
         Response fallbackResponse = apiInvoker.invokeGet("/test");
