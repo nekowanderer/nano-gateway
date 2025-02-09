@@ -8,6 +8,7 @@ import idv.clu.api.client.provider.OkHttpClientProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,10 @@ import org.slf4j.LoggerFactory;
 public class ApiInvoker {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApiInvoker.class);
+
+    @Inject
+    @ConfigProperty(name = "api.invoker.retry.max.count", defaultValue = "3")
+    int maxRetryCount;
 
     @Inject
     OkHttpClientProvider httpClientProvider;
@@ -36,10 +41,9 @@ public class ApiInvoker {
     private Response invoke(ApiCall apiCall) throws Exception {
         HttpResult result;
         String endpoint = null;
-        int maxRetries = 3;
         int retries = 0;
 
-        while (retries < maxRetries) {
+        while (retries < maxRetryCount) {
             try {
                 result = apiCall.call();
                 endpoint = result.getEndpoint();
@@ -54,8 +58,8 @@ public class ApiInvoker {
                 }
             } catch (ClientTimeoutException clientTimeoutException) {
                 retries++;
-                if (retries == maxRetries) {
-                    LOG.error("Request failed after {} retries for endpoint: {}", maxRetries, endpoint);
+                if (retries == maxRetryCount) {
+                    LOG.error("Request failed after {} retries for endpoint: {}", maxRetryCount, endpoint);
                     circuitBreaker.reportFailure(endpoint);
                     throw clientTimeoutException;
                 }

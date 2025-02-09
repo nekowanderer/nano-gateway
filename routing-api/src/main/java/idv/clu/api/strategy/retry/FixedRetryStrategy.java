@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 public class FixedRetryStrategy implements RetryStrategy {
 
     @Inject
-    @ConfigProperty(name = "retry.max.count", defaultValue = "3")
+    @ConfigProperty(name = "strategy.retry.max.count", defaultValue = "3")
     int maxRetryCount;
 
     @SuppressWarnings("unused")

@@ -4,6 +4,7 @@ import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;
 import idv.clu.api.client.model.HttpResult;
 import idv.clu.api.client.provider.OkHttpClientProvider;
+import idv.clu.api.strategy.retry.RetryStrategy;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -27,6 +28,7 @@ class ApiInvokerTest {
 
     public ApiInvokerTest() {
         MockitoAnnotations.openMocks(this);
+        apiInvoker.maxRetryCount = 3;
     }
 
     @Test

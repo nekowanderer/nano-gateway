@@ -39,6 +39,26 @@ services:
     depends_on:
       - simple_api_build
 
+  simple_api_4:
+    image: simple_api
+    container_name: simple_api_4
+    ports:
+      - "${SIMPLE_API_4_PORT}:8080"
+    environment:
+      - QUARKUS_HTTP_PORT=8080
+    depends_on:
+      - simple_api_build
+
+  simple_api_5:
+    image: simple_api
+    container_name: simple_api_5
+    ports:
+      - "${SIMPLE_API_5_PORT}:8080"
+    environment:
+      - QUARKUS_HTTP_PORT=8080
+    depends_on:
+      - simple_api_build
+
   routing_api:
     image: routing_api
     container_name: routing_api
@@ -47,9 +67,11 @@ services:
       - "5005:5005"
     environment:
       - QUARKUS_HTTP_PORT=8080
-      - AVAILABLE_API_INSTANCES=http://simple_api_1:8080,http://simple_api_2:8080,http://simple_api_3:8080
+      - "AVAILABLE_API_INSTANCES=${AVAILABLE_API_INSTANCES}"
     depends_on:
       - simple_api_1
       - simple_api_2
       - simple_api_3
+      - simple_api_4
+      - simple_api_5
       - routing_api_build
