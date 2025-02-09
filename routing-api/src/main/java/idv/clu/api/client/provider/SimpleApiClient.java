@@ -1,4 +1,4 @@
-package idv.clu.api.client;
+package idv.clu.api.client.provider;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;

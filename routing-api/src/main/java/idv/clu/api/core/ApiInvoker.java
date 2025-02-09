@@ -1,10 +1,10 @@
-package idv.clu.api.client;
+package idv.clu.api.core;
 
 import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;
 import idv.clu.api.client.exception.ClientTimeoutException;
 import idv.clu.api.client.model.HttpResult;
-import idv.clu.api.client.provider.HttpRequestExecutor;
+import idv.clu.api.executor.HttpRequestExecutor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;

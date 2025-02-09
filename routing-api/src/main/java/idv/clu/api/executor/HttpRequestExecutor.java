@@ -1,4 +1,4 @@
-package idv.clu.api.client.provider;
+package idv.clu.api.executor;
 
 import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;

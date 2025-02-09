@@ -1,6 +1,5 @@
 package idv.clu.api.client.provider;
 
-import idv.clu.api.client.SimpleApiClient;
 import idv.clu.api.common.RoutingConfig;
 import org.junit.jupiter.api.Test;
 
