@@ -4,6 +4,7 @@ import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;
 import idv.clu.api.client.exception.ClientHttpRequestException;
 import idv.clu.api.client.exception.ClientTimeoutException;
+import idv.clu.api.client.exception.ServerErrorException;
 import idv.clu.api.client.model.HttpResult;
 import idv.clu.api.strategy.retry.RetryStrategy;
 import idv.clu.api.strategy.retry.RetryStrategyType;
@@ -26,6 +27,7 @@ public class HttpRequestExecutor {
 
     private final static Logger LOG = LoggerFactory.getLogger(HttpRequestExecutor.class);
     private final static MediaType APPLICATION_JSON =  MediaType.parse(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
+    private final static int INTERNAL_SERVER_ERROR = jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     @Inject
     OkHttpClient client;
@@ -68,25 +70,36 @@ public class HttpRequestExecutor {
         }
 
         try {
-            jakarta.ws.rs.core.Response response = retryStrategy.executeWithRetries(() -> {
-                LOG.debug("Sending POST request to: {}", targetUrl);
-                okhttp3.Response okHttpResponse = client.newCall(request).execute();
-                return toJakartaResponse(okHttpResponse);
-            });
-
-            return new HttpResult(targetUrl, response);
+            return executeWithRetries(request, targetUrl);
         } catch (SocketTimeoutException timeoutException) {
             final String logMessage = String.format("Request to %s timed out.", targetUrl);
             LOG.warn(logMessage);
-            ClientTimeoutException clientTimeoutException = new ClientTimeoutException(logMessage);
-            return new HttpResult(targetUrl, clientTimeoutException);
-        } catch (CircuitBreakerOpenException circuitBreakerOpenException) {
-            throw circuitBreakerOpenException;
+            circuitBreaker.reportFailure(targetUrl);
+            throw new ClientTimeoutException(logMessage);
+        } catch (CircuitBreakerOpenException | ServerErrorException retryableException) {
+            circuitBreaker.reportFailure(targetUrl);
+            throw retryableException;
         } catch (Exception exception) {
             String logMessage = String.format("Failed to send request to %s.", targetUrl);
             LOG.error("{} Detail exception: {}.", logMessage, exception.toString());
             return new HttpResult(targetUrl, new ClientHttpRequestException(logMessage, exception));
         }
+    }
+
+    private HttpResult executeWithRetries(Request request, String targetUrl) throws Exception {
+        jakarta.ws.rs.core.Response response = retryStrategy.executeWithRetries(() -> {
+            LOG.debug("Sending POST request to: {}", targetUrl);
+            final okhttp3.Response okHttpResponse = client.newCall(request).execute();
+            final int statusCode = okHttpResponse.code();
+            if (statusCode >= INTERNAL_SERVER_ERROR && statusCode < INTERNAL_SERVER_ERROR + 100) {
+                throw new ServerErrorException(
+                        String.format("Received server error code (%s) from %s.",
+                                statusCode, targetUrl), statusCode);
+            }
+            return toJakartaResponse(okHttpResponse);
+        });
+
+        return new HttpResult(targetUrl, response);
     }
 
     jakarta.ws.rs.core.Response toJakartaResponse(Response okHttpResponse) throws IOException {

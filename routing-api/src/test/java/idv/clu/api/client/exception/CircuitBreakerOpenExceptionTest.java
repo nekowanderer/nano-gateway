@@ -25,7 +25,7 @@ class CircuitBreakerOpenExceptionTest {
         String actualMessage = exception.getMessage();
 
         assertNotNull(actualMessage, "Exception message should not be null");
-        assertEquals("Circuit Breaker is OPEN for target URL: " + targetUrl, actualMessage, "Exception message should match the expected format");
+        assertEquals("Circuit Breaker is OPEN for target URL: " + targetUrl + ", try next instance.", actualMessage, "Exception message should match the expected format");
     }
 
 }

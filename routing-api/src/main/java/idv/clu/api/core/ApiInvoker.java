@@ -3,6 +3,7 @@ package idv.clu.api.core;
 import idv.clu.api.circuitbreaker.CircuitBreaker;
 import idv.clu.api.client.exception.CircuitBreakerOpenException;
 import idv.clu.api.client.exception.ClientTimeoutException;
+import idv.clu.api.client.exception.ServerErrorException;
 import idv.clu.api.client.model.HttpResult;
 import idv.clu.api.executor.HttpRequestExecutor;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -56,16 +57,8 @@ public class ApiInvoker {
                     circuitBreaker.reportFailure(endpoint);
                     return handleFailure(exception, endpoint);
                 }
-            } catch (ClientTimeoutException clientTimeoutException) {
-                retries++;
-                if (retries == maxRetryCount) {
-                    LOG.error("Request failed after {} retries for endpoint: {}", maxRetryCount, endpoint);
-                    circuitBreaker.reportFailure(endpoint);
-                    throw clientTimeoutException;
-                }
-            } catch (CircuitBreakerOpenException circuitBreakerOpenException) {
-                LOG.error("Circuit breaker is OPEN for endpoint: {}, try next instance.", circuitBreakerOpenException.getTargetUrl());
-                retries++;
+            } catch (ClientTimeoutException | ServerErrorException | CircuitBreakerOpenException retryableException) {
+                retries = handleRetryOrThrow(retryableException, retries, maxRetryCount, endpoint);
             } catch (Exception exception) {
                 circuitBreaker.reportFailure(endpoint);
                 return handleFailure(exception, endpoint);
@@ -75,17 +68,23 @@ public class ApiInvoker {
         return fallbackResponse();
     }
 
-    private Response handleFailure(Exception exception, String endpoint) throws Exception {
-        switch (exception.getClass().getSimpleName()) {
-            case "ClientHttpRequestException":
-                LOG.error("Request failed for endpoint: {}", endpoint);
-                break;
-            case "ClientTimeoutException":
-                LOG.error("Request timed out for endpoint: {}", endpoint);
-                throw exception;
-            default:
-                LOG.error("Unexpected error for endpoint: {}", endpoint);
-                break;
+    private int handleRetryOrThrow(
+            Exception exception, int retries, int maxRetryCount, String endpoint) throws Exception {
+        if (++retries >= maxRetryCount) {
+            LOG.error("Request failed after {} retries for endpoint: {}",
+                    maxRetryCount, endpoint);
+            throw exception;
+        }
+        LOG.warn("Retry attempt {} for endpoint: {} due to exception: {}",
+                retries, endpoint, exception.getMessage());
+        return retries;
+    }
+
+    private Response handleFailure(Exception exception, String endpoint) {
+        if (exception.getClass().getSimpleName().equals("ClientHttpRequestException")) {
+            LOG.error("Request failed for endpoint: {}", endpoint);
+        } else {
+            LOG.error("Unexpected error for endpoint: {}", endpoint);
         }
         return fallbackResponse();
     }
@@ -93,7 +92,7 @@ public class ApiInvoker {
 
     private Response fallbackResponse() {
         return Response
-                .status(503)
+                .status(Response.Status.SERVICE_UNAVAILABLE)
                 .entity("{\"message\":\"Service unavailable\"}")
                 .build();
     }
