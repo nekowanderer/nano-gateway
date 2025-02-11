@@ -1,20 +1,19 @@
 meta {
-  name: Echo with valid JSON
+  name: Simulate server error
   type: http
-  seq: 1
+  seq: 4
 }
 
 post {
-  url: http://localhost:8080/simple-api/rest_resource/echo
+  url: http://localhost:8080/simple-api/rest_resource/simulate_error
   body: json
   auth: none
 }
 
 body:json {
   {
-    "game": "Mobile Legends",
-    "gamerID":"GYUTDTE",
-    "points":20
+    "serverDown": true,
+    "recoverAfterMillis": 5000
   }
 }
 
