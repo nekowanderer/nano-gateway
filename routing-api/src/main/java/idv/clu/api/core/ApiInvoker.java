@@ -75,8 +75,7 @@ public class ApiInvoker {
                     maxRetryCount, endpoint);
             throw exception;
         }
-        LOG.warn("Retry attempt {} for endpoint: {} due to exception: {}",
-                retries, endpoint, exception.getMessage());
+        LOG.warn("Retry attempt {} due to exception: {}", retries, exception.getMessage());
         return retries;
     }
 
