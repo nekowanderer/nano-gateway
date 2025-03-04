@@ -1,5 +1,5 @@
-# HTTP Round Robing API
-#### This project is a simple demonstration for the round robing load balancer, it will contains the following components:
+# Nano Gateway 
+#### This project is a simple demonstration for the general API gateway, it will contains the following components:
 - Routing API
   - The load balancer which will face to the end user directly and will dispatch the requests to the backend service behind it.
   - By default, it will adopt the round-robin algorithm for routing the requests.
@@ -13,8 +13,9 @@
 - JUnit 5
 - Mockito
 - Maven 3.9.9
-- Docker compose
 - Bruno/Hoppscotch (For end-to-end testing)
+- Containerization (Docker, Docker Compose)
+- Container Orchestration (Kubernetes)
 
 ## How to build/debug/test the project (same for all modules)
 - For build/test/packaging:
