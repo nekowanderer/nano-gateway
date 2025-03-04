@@ -23,6 +23,7 @@ public class RoundRobinRoutingStrategy implements RoutingStrategy {
     @Inject
     RoutingConfig routingConfig;
 
+    // TODO bad smell
     List<String> availableInstances;
 
     @PostConstruct
@@ -44,6 +45,7 @@ public class RoundRobinRoutingStrategy implements RoutingStrategy {
             throw new IllegalArgumentException("No available instances for routing");
         }
 
+        // TODO check node's health status here according to the list
         final int index = roundRobinIndex.getAndUpdate(i -> (i + 1) % availableInstances.size());
         final String nextUrl = availableInstances.get(index).concat(urlPath);
         LOG.debug("Next target URL selected by round robin: {}", nextUrl);
