@@ -14,7 +14,7 @@
 - Mockito
 - Maven 3.9.9
 - Docker compose
-- Bruno (For end-to-end testing)
+- Bruno/Hoppscotch (For end-to-end testing)
 
 ## How to build/debug/test the project (same for all modules)
 - For build/test/packaging:

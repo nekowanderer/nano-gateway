@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-api-1
+spec:
+  selector:
+    app: simple-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30081
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-api-2
+spec:
+  selector:
+    app: simple-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30082
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-api-3
+spec:
+  selector:
+    app: simple-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30083
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-api-4
+spec:
+  selector:
+    app: simple-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30084
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-api-5
+spec:
+  selector:
+    app: simple-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30085
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: routing-api-service
+spec:
+  selector:
+    app: routing-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort

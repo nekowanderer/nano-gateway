@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-api-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: simple-api
+  template:
+    metadata:
+      labels:
+        app: simple-api
+    spec:
+      containers:
+        - name: simple-api
+          image: nekowandrer/simple_api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_HTTP_PORT
+              value: "8080"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: routing-api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: routing-api
+  template:
+    metadata:
+      labels:
+        app: routing-api
+    spec:
+      containers:
+        - name: routing-api
+          image: nekowandrer/routing_api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_HTTP_PORT
+              value: "8080"
+            - name: AVAILABLE_API_INSTANCES
+              value: "http://simple-api-1:8080,http://simple-api-2:8080,http://simple-api-3:8080,http://simple-api-4:8080,http://simple-api-5:8080"
