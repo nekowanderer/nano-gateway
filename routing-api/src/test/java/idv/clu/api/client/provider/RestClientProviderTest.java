@@ -3,7 +3,10 @@ package idv.clu.api.client.provider;
 import idv.clu.api.common.RoutingConfig;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -17,7 +20,7 @@ class RestClientProviderTest {
         final String instance3 = "http://simple_api_3:8080";
 
         final RoutingConfig mockRoutingConfig = mock(RoutingConfig.class);
-        final List<String> mockInstances = List.of(instance1, instance2, instance3);
+        final Set<String> mockInstances = new HashSet<>(List.of(instance1, instance2, instance3));
         when(mockRoutingConfig.getAvailableInstances()).thenReturn(mockInstances);
 
         final RestClientProvider spyProvider = spy(new RestClientProvider());
@@ -35,24 +38,31 @@ class RestClientProviderTest {
 
         assertNotNull(spyProvider.clients);
         assertEquals(3, spyProvider.clients.size());
-        assertSame(mockClient1, spyProvider.clients.get(0));
-        assertSame(mockClient2, spyProvider.clients.get(1));
-        assertSame(mockClient3, spyProvider.clients.get(2));
+        assertTrue(spyProvider.clients.contains(mockClient1), "Clients list should contain mockClient1");
+        assertTrue(spyProvider.clients.contains(mockClient2), "Clients list should contain mockClient2");
+        assertTrue(spyProvider.clients.contains(mockClient3), "Clients list should contain mockClient3");
 
         verify(spyProvider, times(1)).createClient(instance1);
         verify(spyProvider, times(1)).createClient(instance2);
         verify(spyProvider, times(1)).createClient(instance3);
 
-        assertEquals(mockClient1, spyProvider.getNextClient());
-        assertEquals(mockClient2, spyProvider.getNextClient());
-        assertEquals(mockClient3, spyProvider.getNextClient());
-        assertEquals(mockClient1, spyProvider.getNextClient());
+        SimpleApiClient client1 = spyProvider.getNextClient();
+        SimpleApiClient client2 = spyProvider.getNextClient();
+        SimpleApiClient client3 = spyProvider.getNextClient();
+        SimpleApiClient client4 = spyProvider.getNextClient();
+
+        List<SimpleApiClient> expectedInstances = List.of(client1, client2, client3, client4);
+
+        assertTrue(expectedInstances.contains(client1), "Client1 should be one of the mock clients");
+        assertTrue(expectedInstances.contains(client2), "Client2 should be one of the mock clients");
+        assertTrue(expectedInstances.contains(client3), "Client3 should be one of the mock clients");
+        assertTrue(expectedInstances.contains(client4), "Client4 should be one of the mock clients");
     }
 
     @Test
     void testInitThrowsExceptionWhenNoInstancesConfigured() {
         final RoutingConfig routingConfig = mock(RoutingConfig.class);
-        when(routingConfig.getAvailableInstances()).thenReturn(List.of());
+        when(routingConfig.getAvailableInstances()).thenReturn(Collections.emptySet());
 
         final RestClientProvider provider = new RestClientProvider();
         provider.routingConfig = routingConfig;

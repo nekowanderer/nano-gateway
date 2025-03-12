@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class RestClientProvider {
     @PostConstruct
     void init() {
         index = new AtomicInteger(0);
-        List<String> instances = routingConfig.getAvailableInstances();
+        Set<String> instances = routingConfig.getAvailableInstances();
         if (instances.isEmpty()) {
             throw new IllegalStateException("No simple api instances configured.");
         }

@@ -7,7 +7,9 @@ import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -23,8 +25,7 @@ public class RoundRobinRoutingStrategy implements RoutingStrategy {
     @Inject
     RoutingConfig routingConfig;
 
-    // TODO bad smell
-    List<String> availableInstances;
+    Set<String> availableInstances;
 
     @PostConstruct
     public void init() {
@@ -45,12 +46,14 @@ public class RoundRobinRoutingStrategy implements RoutingStrategy {
             throw new IllegalArgumentException("No available instances for routing");
         }
 
+        // Convert Set to List for indexed access
+        List<String> instancesList = new ArrayList<>(availableInstances);
+
         // TODO check node's health status here according to the list
-        final int index = roundRobinIndex.getAndUpdate(i -> (i + 1) % availableInstances.size());
-        final String nextUrl = availableInstances.get(index).concat(urlPath);
+        final int index = roundRobinIndex.getAndUpdate(i -> (i + 1) % instancesList.size());
+        final String nextUrl = instancesList.get(index).concat(urlPath);
         LOG.debug("Next target URL selected by round robin: {}", nextUrl);
         return nextUrl;
     }
 
 }
-
