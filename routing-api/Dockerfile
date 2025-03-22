@@ -19,5 +19,6 @@ COPY --from=build /app/target/quarkus-app/ /app/
 EXPOSE 8080 5005
 
 ENV JAVA_TOOL_OPTIONS "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+ENV QUARKUS_PROFILE container
 
 ENTRYPOINT ["java", "-jar", "/app/quarkus-run.jar"]
