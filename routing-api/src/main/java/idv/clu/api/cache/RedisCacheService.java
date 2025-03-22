@@ -16,6 +16,8 @@ import java.util.Optional;
 
 /**
  * @author clu
+ *
+ * TODO: Add null check for input parameter and error handling, then modify the test.
  */
 @ApplicationScoped
 public class RedisCacheService implements CacheService{
@@ -52,7 +54,7 @@ public class RedisCacheService implements CacheService{
                             .map(Response::toString)
                             .orElse(null);
                 }).onFailure().recoverWithItem(error -> {
-                    LOG.error("Failed to get key: {}, error {}", cacheKey, error.getMessage());
+                    LOG.error("Failed to get key: {}, error: {}", cacheKey, error.getMessage());
                     return null;
                 });
     }
@@ -70,7 +72,7 @@ public class RedisCacheService implements CacheService{
                     LOG.debug("Set key {} with result: {}", cacheKey, response);
                     return null;
                 }).onFailure().recoverWithItem(error -> {
-                    LOG.error("Failed to cache key {}, expiry {}, error {}", cacheKey, expiry, error.getMessage());
+                    LOG.error("Failed to cache key: {}, expiry: {}, error: {}", cacheKey, expiry, error.getMessage());
                     return null;
                 }).replaceWithVoid();
     }

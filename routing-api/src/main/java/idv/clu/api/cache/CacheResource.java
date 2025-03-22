@@ -28,8 +28,11 @@ public class CacheResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> getCacheItem(@PathParam("key") String key) {
         LOG.info("Fetching cache item with key: {}", key);
-        return cacheService.getItem(key)
-                .onItem().transform(value -> Response.ok(value).build());
+        return cacheService
+                .getItem(key)
+                .onItem()
+                .transform(value -> Response.ok(value).build()
+                );
     }
 
     @PUT
@@ -37,8 +40,11 @@ public class CacheResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<Response> putCacheItem(@PathParam("key") String key, String requestPayload) {
         LOG.info("Storing cache item with key: {}", key);
-        return cacheService.putItem(key, requestPayload)
-                .onItem().transform(ignored -> Response.ok().build());
+        return cacheService
+                .putItem(key, requestPayload)
+                .onItem()
+                .transform(ignored -> Response.ok().build()
+                );
     }
 
 }
