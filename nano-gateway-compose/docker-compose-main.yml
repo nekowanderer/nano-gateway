@@ -1,0 +1,13 @@
+include:
+  - path:
+      - ./applications/docker-compose-applications.yml
+      - ./redis/docker-compose-redis-cluster.yml
+    env_file: .env
+
+services:
+  entry_point:
+    image: busybox
+    env_file:
+      - .env
+    container_name: entry_point
+    command: [ "/bin/sh", "-c", "echo \"Current compose file: ${COMPOSE_FILE}\" && exit 0" ]

@@ -1,0 +1,113 @@
+services:
+  redis-1:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-1
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}/node1:/data"
+    ports:
+      - "6379:6379"
+      - "16379:16379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: "${REDIS_HEALTH_CHECK_INTERVAL}"
+      timeout: "${REDIS_HEALTH_CHECK_TIMEOUT}"
+      retries: "${REDIS_HEALTH_CHECK_RETRIES}"
+
+  redis-2:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-2
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}/node2:/data"
+    ports:
+      - "6380:6379"
+      - "16380:16380"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: "${REDIS_HEALTH_CHECK_INTERVAL}"
+      timeout: "${REDIS_HEALTH_CHECK_TIMEOUT}"
+      retries: "${REDIS_HEALTH_CHECK_RETRIES}"
+
+  redis-3:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-3
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}/node3:/data"
+    ports:
+      - "6381:6379"
+      - "16381:16381"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: "${REDIS_HEALTH_CHECK_INTERVAL}"
+      timeout: "${REDIS_HEALTH_CHECK_TIMEOUT}"
+      retries: "${REDIS_HEALTH_CHECK_RETRIES}"
+
+  redis-4:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-4
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}/node4:/data"
+    ports:
+      - "6382:6379"
+      - "16382:16382"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: "${REDIS_HEALTH_CHECK_INTERVAL}"
+      timeout: "${REDIS_HEALTH_CHECK_TIMEOUT}"
+      retries: "${REDIS_HEALTH_CHECK_RETRIES}"
+
+  redis-5:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-5
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}/node5:/data"
+    ports:
+      - "6383:6379"
+      - "16383:16383"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: "${REDIS_HEALTH_CHECK_INTERVAL}"
+      timeout: "${REDIS_HEALTH_CHECK_TIMEOUT}"
+      retries: "${REDIS_HEALTH_CHECK_RETRIES}"
+
+  redis-6:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-6
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}/node6:/data"
+    ports:
+      - "6384:6379"
+      - "16384:16384"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: "${REDIS_HEALTH_CHECK_INTERVAL}"
+      timeout: "${REDIS_HEALTH_CHECK_TIMEOUT}"
+      retries: "${REDIS_HEALTH_CHECK_RETRIES}"
+
+  redis-init:
+    build: "${CONTEXT_PATH_REDIS}"
+    env_file:
+      - .env
+    container_name: redis-init
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    entrypoint: [ "/bin/sh", "-c", "/usr/local/bin/init-redis-cluster.sh" ]
+    volumes:
+      - "${CONTEXT_PATH_REDIS_DATA}:/data"
+    restart: "on-failure"

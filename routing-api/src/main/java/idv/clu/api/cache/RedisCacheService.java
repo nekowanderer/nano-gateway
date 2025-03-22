@@ -51,8 +51,9 @@ public class RedisCacheService implements CacheService{
                     return Optional.ofNullable(response)
                             .map(Response::toString)
                             .orElse(null);
-                }).onFailure().invoke(error -> {
+                }).onFailure().recoverWithItem(error -> {
                     LOG.error("Failed to get key: {}, error {}", cacheKey, error.getMessage());
+                    return null;
                 });
     }
 
@@ -68,8 +69,9 @@ public class RedisCacheService implements CacheService{
                 .map(response -> {
                     LOG.debug("Set key {} with result: {}", cacheKey, response);
                     return null;
-                }).onFailure().invoke(error -> {
+                }).onFailure().recoverWithItem(error -> {
                     LOG.error("Failed to cache key {}, expiry {}, error {}", cacheKey, expiry, error.getMessage());
+                    return null;
                 }).replaceWithVoid();
     }
 
