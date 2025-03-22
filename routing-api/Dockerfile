@@ -4,8 +4,9 @@ FROM maven:3.9.9-amazoncorretto-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
-COPY src src
-COPY target/quarkus-app/ /deployments/
+RUN mvn dependency:go-offline
+
+COPY src ./src
 
 RUN mvn clean test verify package -Dquarkus.package.type=fast-jar -DskipTests=false
 
