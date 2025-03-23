@@ -13,6 +13,7 @@
 - JUnit 5
 - Mockito
 - Maven 3.9.9
+- Redis (7.x)
 - Bruno/Hoppscotch (For end-to-end testing)
 - Containerization (Docker, Docker Compose)
 - Container Orchestration (Kubernetes)
