@@ -9,6 +9,11 @@ services:
       context: "${CONTEXT_PATH_ROUTING_API}"
     image: routing_api
 
+  load_testing_build:
+    build:
+      context: "${CONTEXT_PATH_LOAD_TESTING}"
+    image: load_testing
+
   simple_api_1:
     image: simple_api
     env_file:
@@ -87,3 +92,18 @@ services:
       - simple_api_4
       - simple_api_5
       - routing_api_build
+      - load_testing_build
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:${ROUTING_API_PORT}/routing-api/q/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  load_testing:
+    image: load_testing
+    env_file:
+      - .env
+    container_name: load_testing
+    depends_on:
+      routing_api:
+        condition: service_healthy

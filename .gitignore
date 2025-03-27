@@ -42,3 +42,5 @@ nb-configuration.xml
 .certs/
 
 /components/redis/redis-data/
+
+*result.html
