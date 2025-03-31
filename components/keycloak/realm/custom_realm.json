@@ -1,0 +1,28 @@
+{
+  "id": "simple_realm",
+  "realm": "simple_realm",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "simple-api",
+      "directAccessGrantsEnabled": true,
+      "publicClient": false,
+      "secret": "simeple-api-secret",
+      "redirectUris": [
+        "http://localhost:8080/*"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "user1",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password"
+        }
+      ]
+    }
+  ]
+}

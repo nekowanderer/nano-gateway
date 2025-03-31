@@ -73,6 +73,16 @@
             <version>${okhttp-client.version}</version>
         </dependency>
 
+        <!-- Keycloak -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-keycloak-authorization</artifactId>
+        </dependency>
+
         <!-- Redis -->
         <dependency>
             <groupId>io.quarkus</groupId>
