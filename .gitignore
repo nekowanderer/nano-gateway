@@ -44,3 +44,5 @@ nb-configuration.xml
 /components/redis/redis-data/
 
 *result.html
+*.p12
+*.keystore
