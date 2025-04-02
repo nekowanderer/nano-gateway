@@ -42,6 +42,7 @@ nb-configuration.xml
 .certs/
 
 /components/redis/redis-data/
+/components/postgresql/postgresql_data/
 
 *result.html
 *.p12
