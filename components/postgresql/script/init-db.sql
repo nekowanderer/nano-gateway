@@ -1,2 +1,5 @@
 CREATE DATABASE nano_postgresql;
 GRANT ALL PRIVILEGES ON DATABASE nano_postgresql TO admin;
+
+CREATE DATABASE keycloak;
+GRANT ALL PRIVILEGES ON DATABASE keycloak TO admin;

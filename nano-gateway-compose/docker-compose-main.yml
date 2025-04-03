@@ -1,6 +1,6 @@
 include:
   - path:
-      - ./applications/docker-compose-applications.yml
+      - ./applications-compose/docker-compose-applications.yml
       - ./redis/docker-compose-redis-cluster.yml
     env_file: .env
 

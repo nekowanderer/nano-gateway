@@ -9,10 +9,59 @@ services:
       context: "${CONTEXT_PATH_ROUTING_API}"
     image: routing_api
 
+  nano_postgresql_build:
+    build:
+      context: "${CONTEXT_PATH_POSTGRESQL}"
+      args:
+        POSTGRESQL_CONF_FILE: "${POSTGRESQL_CONF_FILE}"
+    image: nano_postgresql
+
+  nano_keycloak_build:
+    build:
+      context: "${CONTEXT_PATH_KEYCLOAK}"
+      args:
+        KEYCLOAK_CONF_FILE: "${KEYCLOAK_CONF_FILE}"
+    image: nano_keycloak
+
   load_testing_build:
     build:
       context: "${CONTEXT_PATH_LOAD_TESTING}"
     image: load_testing
+
+  nano_postgresql:
+    image: nano_postgresql
+    container_name: nano_postgresql
+    restart: always
+    volumes:
+      - "${POSTGRES_DATA_PATH}:/var/lib/postgresql/data"
+      - "${INIT_SQL_PATH}:/docker-entrypoint-initdb.d/0.sql"
+    ports:
+      - "${POSTGRESQL_PORT}:${INTERNAL_POSTGRESQL_PORT}"
+    environment:
+      - "POSTGRES_DB=${POSTGRES_DB}"
+      - "POSTGRES_USER=${POSTGRES_USER}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - nano_postgresql_build
+
+  nano_keycloak:
+    image: nano_keycloak
+    container_name: nano_keycloak
+    ports:
+      - "${KEYCLOAK_PORT}:${INTERNAL_KEYCLOAK_PORT}"
+      - "${KEYCLOAK_HEALTH_CHECK_PORT}:${INTERNAL_KEYCLOAK_HEALTH_CHECK_PORT}"
+    environment:
+      - "KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME}"
+      - "KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}"
+      - "JAVA_OPTS_KC_HEAP=${JAVA_OPTS_KC_HEAP}"
+    depends_on:
+      - nano_keycloak_build
+      - nano_postgresql
 
   simple_api_1:
     image: simple_api
@@ -92,6 +141,7 @@ services:
       - simple_api_4
       - simple_api_5
       - routing_api_build
+      - nano_keycloak
       - load_testing_build
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:${ROUTING_API_PORT}/routing-api/q/health"]

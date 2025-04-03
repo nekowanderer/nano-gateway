@@ -21,3 +21,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
+
+  nano_keycloak:
+    build:
+      context: "${CONTEXT_PATH_KEYCLOAK}"
+      args:
+        KEYCLOAK_CONF_FILE: "${KEYCLOAK_CONF_FILE}"
+    image: nano_keycloak
+    container_name: nano_keycloak
+    ports:
+      - "${KEYCLOAK_PORT}:${INTERNAL_KEYCLOAK_PORT}"
+      - "${KEYCLOAK_HEALTH_CHECK_PORT}:${INTERNAL_KEYCLOAK_HEALTH_CHECK_PORT}"
+    environment:
+      - "KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME}"
+      - "KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}"
+      - "JAVA_OPTS_KC_HEAP=${JAVA_OPTS_KC_HEAP}"
+    depends_on:
+      - nano_postgresql
