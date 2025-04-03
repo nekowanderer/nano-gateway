@@ -37,4 +37,5 @@ services:
       - "KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}"
       - "JAVA_OPTS_KC_HEAP=${JAVA_OPTS_KC_HEAP}"
     depends_on:
-      - nano_postgresql
+      nano_postgresql:
+        condition: service_healthy
