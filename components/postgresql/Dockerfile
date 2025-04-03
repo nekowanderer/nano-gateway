@@ -1,4 +1,4 @@
-FROM postgres:15
+FROM postgres:16.8
 
 ARG POSTGRESQL_CONF_FILE=/conf/postgresql.conf
 
