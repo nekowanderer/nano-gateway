@@ -2,8 +2,8 @@ services:
   nano_postgresql:
       build:
         context: "${CONTEXT_PATH_POSTGRESQL}"
-#        args:
-#          POSTGRESQL_CONF_FILE: "${POSTGRESQL_CONF_FILE}"
+        args:
+          POSTGRESQL_CONF_FILE: "${POSTGRESQL_CONF_FILE}"
       image: nano_postgresql
       restart: always
       volumes:
