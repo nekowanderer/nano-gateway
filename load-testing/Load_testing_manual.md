@@ -5,7 +5,7 @@
 
 ## How to Write the Test Script?
 
-Here we can take the `spec/routing-api/echo.js` as an example:
+Here we can take the `spec/gateway-api/echo.js` as an example:
 
 | Code Block        | Definition                                                                                                                                                                                                                                                                                                                                                                    |
 |-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -45,13 +45,13 @@ $ k6 run --vus VIRTUAL_USER_AMOUNT --duration DURATION_VALUE -e ENV_VAR1 -e ENV_
 - `duration`: the value for how long you want to perform the test, e.g., 10m means 10 minutes.
 - `i`: the iteration count, this option is an alternative if you don’t want to specify the duration, e.g., 1 means only performs the test for each virtual user for one time without control the total duration time.
 
-For example, if you want to try the `spec/routing-api/echo.js` testing on the local machine, please follow the instructions below:
+For example, if you want to try the `spec/gateway-api/echo.js` testing on the local machine, please follow the instructions below:
 
-Ensure the routing-api is running, either local or docker-compose instance should be fine.
+Ensure the gateway-api is running, either local or docker-compose instance should be fine.
 
-Navigating to the folder: `spec/routing-api`, then run the following command:
+Navigating to the folder: `spec/gateway-api`, then run the following command:
 ```commandline
-$ k6 run --vus 1 -i 1 -e ECHO_URL=http://127.0.0.1:8080/routing-api/route/simple_api/echo echo.js
+$ k6 run --vus 1 -i 1 -e ECHO_URL=http://127.0.0.1:8080/gateway-api/route/simple_api/echo echo.js
 ```
 This command will only run for one iteration for one virtual user, which is convenient for debugging.
 
@@ -60,7 +60,7 @@ Once the test is finished, you will see the result like:
 
 If you want to run the test for a specific duration, please use the following command:
 ```commandline
-k6 run --vus 10 --duration 1m -e ECHO_URL=http://127.0.0.1:8080/routing-api/route/simple_api/echo echo.js
+k6 run --vus 10 --duration 1m -e ECHO_URL=http://127.0.0.1:8080/gateway-api/route/simple_api/echo echo.js
 ```
 This way is more recommended since it shows you the real-time performance statistics for the real load testing.
 

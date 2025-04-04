@@ -26,20 +26,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: routing-api-deployment
+  name: gateway-api-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: routing-api
+      app: gateway-api
   template:
     metadata:
       labels:
-        app: routing-api
+        app: gateway-api
     spec:
       containers:
-        - name: routing-api
-          image: nekowandrer/routing_api:latest
+        - name: gateway-api
+          image: nekowandrer/gateway_api:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

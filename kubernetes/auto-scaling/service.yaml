@@ -16,10 +16,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: routing-api-service
+  name: gateway-api-service
 spec:
   selector:
-    app: routing-api
+    app: gateway-api
   ports:
     - protocol: TCP
       port: 8080

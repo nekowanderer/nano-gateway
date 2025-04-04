@@ -31,14 +31,14 @@ $ kubectl get nodes
 ```
 $ docker login
 
-$ docker tag routing_api:latest YOUR_DOCKER_HUB_USERNAME/routing_api:latest
+$ docker tag gateway_api:latest YOUR_DOCKER_HUB_USERNAME/gateway_api:latest
 $ docker tag simple_api:latest YOUR_DOCKER_HUB_USERNAME/simple_api:latest
 
-$ docker push YOUR_DOCKER_HUB_USERNAME/routing_api:latest
+$ docker push YOUR_DOCKER_HUB_USERNAME/gateway_api:latest
 $ docker push YOUR_DOCKER_HUB_USERNAME/simple_api:latest
 ```
 - For example, here are the example images:
-  - [routing_api](https://hub.docker.com/repository/docker/nekowandrer/routing_api/general)
+  - [gateway_api](https://hub.docker.com/repository/docker/nekowandrer/gateway_api/general)
   - [simple_api](https://hub.docker.com/repository/docker/nekowandrer/simple_api/general)
 
 ## Auto Scaling Deployment
@@ -53,9 +53,9 @@ $ kubectl apply -f service.yaml -f deployment.yaml
 - You should see the following messages in the terminal window:
 ```
 service/simple-api-service created
-service/routing-api-service created
+service/gateway-api-service created
 deployment.apps/simple-api-deployment created
-deployment.apps/routing-api-deployment created
+deployment.apps/gateway-api-deployment created
 ```
 - Check the status of all pods:
 ```
@@ -64,7 +64,7 @@ $ kubectl get pods
 - Make sure you can see all the pods are ready and running like the following:
 ```commandline
 NAME                                     READY   STATUS    RESTARTS   AGE
-routing-api-deployment-d694cdbcf-vcw78   1/1     Running   0          78s
+gateway-api-deployment-d694cdbcf-vcw78   1/1     Running   0          78s
 simple-api-deployment-7fbcfb6c56-2cpkp   1/1     Running   0          78s
 simple-api-deployment-7fbcfb6c56-ks4vs   1/1     Running   0          78s
 simple-api-deployment-7fbcfb6c56-m2hg5   1/1     Running   0          78s
@@ -79,12 +79,12 @@ $ kubectl get services
 ```
 NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)          AGE
 kubernetes            ClusterIP   10.96.0.1     <none>        443/TCP          3h50m
-routing-api-service   NodePort    10.96.238.8   <none>        8080:32090/TCP   20s
+gateway-api-service   NodePort    10.96.238.8   <none>        8080:32090/TCP   20s
 simple-api-service    ClusterIP   10.100.8.87   <none>        8080/TCP         20s
 ```
 - For simplicity, use the following port forward command for exposing the service to the local machine:
 ```
-$ kubectl port-forward svc/routing-api-service 8080:8080
+$ kubectl port-forward svc/gateway-api-service 8080:8080
 ```
 - Then you can access the app at http://localhost:8080
   - <img src="https://github.com/user-attachments/assets/59ca1562-44c8-4085-8dcd-9651c4e3d5a4" width=1000 alt="">

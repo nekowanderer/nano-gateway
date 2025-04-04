@@ -10,7 +10,7 @@
         {
           "v": "11",
           "name": "Route for simple API delay",
-          "endpoint": "http://localhost:8080/routing-api/route/simple_api/delay",
+          "endpoint": "http://localhost:8080/gateway-api/route/simple_api/delay",
           "method": "POST",
           "headers": [],
           "params": [],
@@ -30,7 +30,7 @@
         {
           "v": "11",
           "name": "Route for simple API echo",
-          "endpoint": "http://localhost:8080/routing-api/route/simple_api/echo",
+          "endpoint": "http://localhost:8080/gateway-api/route/simple_api/echo",
           "method": "POST",
           "headers": [],
           "params": [],

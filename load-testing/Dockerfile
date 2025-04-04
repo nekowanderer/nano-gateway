@@ -4,6 +4,6 @@ WORKDIR /app
 
 USER root
 
-COPY ./spec/routing-api .
+COPY ./spec/gateway-api .
 
-CMD ["run", "--vus", "1", "--duration", "5s", "-e", "ECHO_URL=http://routing_api:8080/routing-api/route/simple_api/echo", "echo.js"]
+CMD ["run", "--vus", "1", "--duration", "5s", "-e", "ECHO_URL=http://gateway_api:8080/gateway-api/route/simple_api/echo", "echo.js"]
