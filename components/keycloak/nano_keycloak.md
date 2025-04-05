@@ -32,4 +32,84 @@
 ```commandline
 keytool -genkeypair -storepass admin123 -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "C=TW,ST=Taiwan,L=Taipei,O=Nano Gateway Inc.,OU=Engineering Department,CN=wandrers.one" -alias nano_keycloak_key -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -keystore keystore/nano_keycloak_key.keystore
 ```
+- For extracting the public key from the keystore:
+```commandline
+cd path_of_the_keystore
+
+keytool -exportcert -alias nano_keycloak_key -keystore nano_keycloak_key.keystore -storetype PKCS12 -storepass admin123 -rfc -file public_cert.pem
+```
+- For verifying the certificate pem file:
+```commandline
+openssl x509 -in public_cert.pem -text -noout
+```
+- The preceding operations have already been wrap up in the custom script `script/generate_truststore.sh`.
 - The keystore should be refreshed every 30 days, you can also perform the keytool command inside the Dockerfile which is only for testing purpose.   
+
+## Interact with Keycloak via Commands
+- Navigate to the keystore folder:
+- By default, you should be able to get the administrator token by the following request:
+  - The `admin` here is the default user, you can create a formal admin user once log in.
+  - The `client_id` of this step is usually the `admin-cli`.
+```commandline
+curl --cacert keycloak-cert.pem --request POST \
+  --url https://localhost:8443/realms/master/protocol/openid-connect/token \
+  --header 'content-type: application/x-www-form-urlencoded' \
+  --data 'grant_type=password' \
+  --data 'client_id=admin-cli' \
+  --data 'username=admin' \
+  --data 'password=admin' | jq
+```
+- The response may look like:
+```json lines
+{
+  "access_token": "access_token_here",
+  "expires_in": 59,
+  "refresh_expires_in": 1799,
+  "refresh_token": "refresh_token_here",
+  "token_type": "Bearer",
+  "not-before-policy": 0,
+  "session_state": "7e35babe-bd13-46e4-8ab9-9b2bea87dcc3",
+  "scope": "profile email"
+}
+```
+- Notice that the expires_in might be very short, so if you need to perform some other admin API invocation, ensure the token is still valid.
+
+- It's similar for the custom realm, suppose we've already created a realm called `gatewa-api` and a user `admin`, then, to fetch the user token, you can use the following command:
+```commandline
+curl --cacert keycloak-cert.pem --request POST \
+     --url https://localhost:8443/realms/gateway-api/protocol/openid-connect/token \
+     --header 'content-type: application/x-www-form-urlencoded' \
+     --data grant_type=password \
+     --data client_id=gateway-api \
+     --data client_secret=fYThPH5ZsSe3maygbcEVKCgCgZG4s3dY \
+     --data username=admin \
+     --data password=admin | jq  
+```
+
+## Keycloak Admin REST API examples
+- With the access token of the admin user in the master realm (or admin user belongs to other realms), you can invoke some admin APIs like:
+```commandline
+curl --cacert keycloak-cert.pem --request GET \
+  --url https://localhost:8443/admin/realms \
+  --header "Authorization: Bearer token_here" | jq
+```
+- For saving time:
+```commandline
+curl --cacert keycloak-cert.pem --silent \
+  --request GET \
+  --url https://localhost:8443/admin/realms \
+  --header "Authorization: Bearer $(curl --cacert keycloak-cert.pem --silent \
+    --request POST \
+    --url https://localhost:8443/realms/master/protocol/openid-connect/token \
+    --header 'content-type: application/x-www-form-urlencoded' \
+    --data 'grant_type=password' \
+    --data 'client_id=admin-cli' \
+    --data 'username=admin' \
+    --data 'password=admin' \
+    | jq -r '.access_token')" | jq
+```
+
+
+
+
+.

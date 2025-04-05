@@ -47,3 +47,4 @@ nb-configuration.xml
 *result.html
 *.p12
 *.keystore
+*.pem
