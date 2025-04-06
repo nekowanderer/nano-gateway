@@ -3,7 +3,7 @@
 # Set the base directory for script paths
 # Assume the current script is at the same level as components directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+BASE_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Check and execute redis/script/clean_infra_data.sh
 REDIS_CLEAN_SCRIPT="$BASE_DIR/components/redis/script/clean_infra_data.sh"
