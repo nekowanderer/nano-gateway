@@ -45,6 +45,10 @@ openssl x509 -in public_cert.pem -text -noout
 - The preceding operations have already been wrap up in the custom script `script/generate_truststore.sh`.
 - The keystore should be refreshed every 30 days, you can also perform the keytool command inside the Dockerfile which is only for testing purpose.   
 
+## Truststore Issue in Development Environment
+- For local environment
+- For docker compose environment
+
 ## Interact with Keycloak via Commands
 - Navigate to the keystore folder:
 - By default, you should be able to get the administrator token by the following request:

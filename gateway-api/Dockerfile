@@ -17,6 +17,16 @@ WORKDIR /app
 
 COPY --from=build /app/target/quarkus-app/ /app/
 
+COPY src/main/resources/keystore/keycloak-cert.pem /app/keycloak-cert.pem
+
+RUN keytool -importcert \
+    -alias keycloak_cert \
+    -storepass changeit \
+    -noprompt \
+    -trustcacerts \
+    -file /app/keycloak-cert.pem \
+    -keystore $JAVA_HOME/lib/security/cacerts
+
 EXPOSE 8080 5005
 
 ENV JAVA_TOOL_OPTIONS "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"

@@ -8,12 +8,14 @@
 
 ## Technical stack
 - Java (JDK 17, amazoncorretto-17)
-- Quarkus framework
+- Quarkus framework (3.21.1)
 - OkHttp
 - JUnit 5
 - Mockito
 - Maven 3.9.9
 - Redis (7.x)
+- PostgreSQL (16.8)
+- Keycloak (26.1.4)
 - Bruno/Hoppscotch (For end-to-end testing)
 - Grafana k6 (For load testing)
 - Containerization (Docker, Docker Compose)

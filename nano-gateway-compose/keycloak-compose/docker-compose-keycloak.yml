@@ -27,8 +27,11 @@ services:
       context: "${CONTEXT_PATH_KEYCLOAK}"
       args:
         KEYCLOAK_CONF_FILE: "${KEYCLOAK_CONF_FILE}"
+        KEYCLOAK_DEFAULT_REALMS: "${KEYCLOAK_DEFAULT_REALMS}"
     image: nano_keycloak
     container_name: nano_keycloak
+    volumes:
+      - "${KEYCLOAK_DATA_PATH}:/opt/keycloak/data"
     ports:
       - "${KEYCLOAK_PORT}:${INTERNAL_KEYCLOAK_PORT}"
       - "${KEYCLOAK_HEALTH_CHECK_PORT}:${INTERNAL_KEYCLOAK_HEALTH_CHECK_PORT}"

@@ -9,20 +9,6 @@ services:
       context: "${CONTEXT_PATH_GATEWAY_API}"
     image: gateway_api
 
-  nano_postgresql_build:
-    build:
-      context: "${CONTEXT_PATH_POSTGRESQL}"
-      args:
-        POSTGRESQL_CONF_FILE: "${POSTGRESQL_CONF_FILE}"
-    image: nano_postgresql
-
-  nano_keycloak_build:
-    build:
-      context: "${CONTEXT_PATH_KEYCLOAK}"
-      args:
-        KEYCLOAK_CONF_FILE: "${KEYCLOAK_CONF_FILE}"
-    image: nano_keycloak
-
   load_testing_build:
     build:
       context: "${CONTEXT_PATH_LOAD_TESTING}"
@@ -141,9 +127,13 @@ services:
       - "${CONTEXT_PATH_REDIS_DATA}:/data"
     restart: "on-failure"
 
-  nano_postgresql:
-    image: nano_postgresql
-    container_name: nano_postgresql
+  nano_postgresql_compose:
+    build:
+      context: "${CONTEXT_PATH_POSTGRESQL}"
+      args:
+        POSTGRESQL_CONF_FILE: "${POSTGRESQL_CONF_FILE}"
+    image: nano_postgresql_compose
+    container_name: nano_postgresql_compose
     restart: always
     volumes:
       - "${POSTGRES_DATA_PATH}:/var/lib/postgresql/data"
@@ -159,12 +149,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-    depends_on:
-      - nano_postgresql_build
 
-  nano_keycloak:
-    image: nano_keycloak
-    container_name: nano_keycloak
+  nano-keycloak-compose:
+    build:
+      context: "${CONTEXT_PATH_KEYCLOAK}"
+      args:
+        KEYCLOAK_CONF_FILE: "${KEYCLOAK_CONF_FILE}"
+        KEYCLOAK_DEFAULT_REALMS: "${KEYCLOAK_DEFAULT_REALMS}"
+    image: nano-keycloak-compose
+    container_name: nano-keycloak-compose
+    volumes:
+      - "${KEYCLOAK_DATA_PATH}:/opt/keycloak/data"
     ports:
       - "${KEYCLOAK_PORT}:${INTERNAL_KEYCLOAK_PORT}"
       - "${KEYCLOAK_HEALTH_CHECK_PORT}:${INTERNAL_KEYCLOAK_HEALTH_CHECK_PORT}"
@@ -173,8 +168,8 @@ services:
       - "KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}"
       - "JAVA_OPTS_KC_HEAP=${JAVA_OPTS_KC_HEAP}"
     depends_on:
-      - nano_keycloak_build
-      - nano_postgresql
+      nano_postgresql_compose:
+        condition: service_healthy
 
   simple_api_1:
     image: simple_api
@@ -254,7 +249,7 @@ services:
       - simple_api_4
       - simple_api_5
       - gateway_api_build
-      - nano_keycloak
+      - nano-keycloak-compose
       - redis-init
       - load_testing_build
     healthcheck:

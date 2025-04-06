@@ -41,13 +41,18 @@ keytool -importcert \
   -storepass "${TRUSTSTORE_PASS}" \
   -noprompt
 
-# === Copy truststore to Quarkus project ===
-echo "📁 Copying truststore to gateway-api project directory..."
+# === Cleanup and copy to Quarkus project ===
+echo "📁 Preparing Quarkus keystore directory..."
+
+if [ -d "${QUARKUS_TRUSTSTORE_DIR}" ]; then
+  echo "🧹 Removing existing Quarkus keystore directory: ${QUARKUS_TRUSTSTORE_DIR}"
+  rm -rf "${QUARKUS_TRUSTSTORE_DIR}"
+fi
+
 mkdir -p "${QUARKUS_TRUSTSTORE_DIR}"
+
+echo "📦 Copying truststore and cert to Quarkus project..."
 cp "${CERT_FILE}" "${QUARKUS_CERT_FILE}"
 cp "${TRUSTSTORE_FILE}" "${QUARKUS_TRUSTSTORE_FILE}"
 
 echo "✅ Truststore created and copied to: ${QUARKUS_TRUSTSTORE_FILE}"
-echo ""
-echo "💡 Suggested application.properties config for Quarkus:"
-echo ""
