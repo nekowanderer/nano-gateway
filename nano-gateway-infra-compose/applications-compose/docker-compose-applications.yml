@@ -1,0 +1,65 @@
+services:
+  simple_api_build:
+    build:
+      context: "${CONTEXT_PATH_SIMPLE_API}"
+    image: simple_api
+
+  simple_api_1:
+    image: simple_api
+    env_file:
+      - .env
+    container_name: simple_api_1
+    ports:
+      - "${SIMPLE_API_1_PORT}:${INTERNAL_QUARKUS_HTTP_PORT}"
+    environment:
+      - "QUARKUS_HTTP_PORT=${INTERNAL_QUARKUS_HTTP_PORT}"
+    depends_on:
+      - simple_api_build
+
+  simple_api_2:
+    image: simple_api
+    env_file:
+      - .env
+    container_name: simple_api_2
+    ports:
+      - "${SIMPLE_API_2_PORT}:${INTERNAL_QUARKUS_HTTP_PORT}"
+    environment:
+      - "QUARKUS_HTTP_PORT=${INTERNAL_QUARKUS_HTTP_PORT}"
+    depends_on:
+      - simple_api_build
+
+  simple_api_3:
+    image: simple_api
+    env_file:
+      - .env
+    container_name: simple_api_3
+    ports:
+      - "${SIMPLE_API_3_PORT}:${INTERNAL_QUARKUS_HTTP_PORT}"
+    environment:
+      - "QUARKUS_HTTP_PORT=${INTERNAL_QUARKUS_HTTP_PORT}"
+    depends_on:
+      - simple_api_build
+
+  simple_api_4:
+    image: simple_api
+    env_file:
+      - .env
+    container_name: simple_api_4
+    ports:
+      - "${SIMPLE_API_4_PORT}:${INTERNAL_QUARKUS_HTTP_PORT}"
+    environment:
+      - "QUARKUS_HTTP_PORT=${INTERNAL_QUARKUS_HTTP_PORT}"
+    depends_on:
+      - simple_api_build
+
+  simple_api_5:
+    image: simple_api
+    env_file:
+      - .env
+    container_name: simple_api_5
+    ports:
+      - "${SIMPLE_API_5_PORT}:${INTERNAL_QUARKUS_HTTP_PORT}"
+    environment:
+      - "QUARKUS_HTTP_PORT=${INTERNAL_QUARKUS_HTTP_PORT}"
+    depends_on:
+      - simple_api_build

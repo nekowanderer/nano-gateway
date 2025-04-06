@@ -41,8 +41,9 @@ nb-configuration.xml
 # TLS Certificates
 .certs/
 
-/components/redis/redis-data/
-/components/postgresql/postgresql_data/
+/components/redis/data/
+/components/keycloak/data/
+/components/postgresql/data/
 
 *result.html
 *.p12

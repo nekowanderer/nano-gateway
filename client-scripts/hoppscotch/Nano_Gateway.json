@@ -1,0 +1,300 @@
+{
+  "v": 6,
+  "name": "Nano_Gateway",
+  "folders": [
+    {
+      "v": 6,
+      "name": "Gateway_API",
+      "folders": [
+        {
+          "v": 6,
+          "name": "cache",
+          "folders": [],
+          "requests": [
+            {
+              "v": "11",
+              "name": "Get cache item",
+              "method": "GET",
+              "endpoint": "http://localhost:8080/gateway-api/cache/item/key1",
+              "params": [],
+              "headers": [],
+              "preRequestScript": "",
+              "testScript": "",
+              "auth": {
+                "authType": "none",
+                "authActive": true
+              },
+              "body": {
+                "contentType": null,
+                "body": null
+              },
+              "requestVariables": [],
+              "responses": {}
+            },
+            {
+              "v": "11",
+              "name": "Put cache item",
+              "method": "PUT",
+              "endpoint": "http://localhost:8080/routing-api/cache/item/key1",
+              "params": [],
+              "headers": [],
+              "preRequestScript": "",
+              "testScript": "",
+              "auth": {
+                "authType": "none",
+                "authActive": true
+              },
+              "body": {
+                "contentType": "application/json",
+                "body": "{\n  \"name\": \"Nana\",\n  \"age\": 18\n}"
+              },
+              "requestVariables": [],
+              "responses": {}
+            },
+            {
+              "v": "11",
+              "name": "Get user identity",
+              "method": "GET",
+              "endpoint": "http://localhost:8080/gateway-api/iam/users/me",
+              "params": [],
+              "headers": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ4cTI2QjZWaDN6WTFDS213N2ZhSFF6M2l6OGpibmJLRC1rTGxaUXU0M08wIn0.eyJleHAiOjE3NDM5NDg4OTYsImlhdCI6MTc0Mzk0ODU5NiwiYXV0aF90aW1lIjoxNzQzOTQ4NTk2LCJqdGkiOiIzYWVhMjRkNy1lYzZhLTQwZWQtYWY5NC1kZmZmZmZjNGJlZWUiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQzL3JlYWxtcy9nYXRld2F5LWFwaSIsInN1YiI6IjRmNDc0ODYzLTljNTgtNDkxOS1iOTU0LWZiMzVhYjM3ZmE3YiIsInR5cCI6IkJlYXJlciIsImF6cCI6ImdhdGV3YXktYXBpIiwic2lkIjoiNWY5OTMxMDctYzBjYi00ZWM1LWI1OTktMTBjNmE3MGNhOGZiIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXX0sInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJBZG1pbiBMaSIsInByZWZlcnJlZF91c2VybmFtZSI6ImFkbWluIiwiZ2l2ZW5fbmFtZSI6IkFkbWluIiwiZmFtaWx5X25hbWUiOiJMaSIsImVtYWlsIjoiY2x1QHdhbmRyZXJzLm9uZSJ9.DhfWWbDIW7R-IxW_cI1IzAnhVXBR0qid4bD8YljsEVu3lqkhGk_5JmQxEpVEgjdtL0yvMvFcXkWYo42PhNgEqntEoKxK0uLnqjpgHbZpWqEuQA2shu01zg-FpT38-obF-Kl-4-TjjybfUYlQV153XCmKjX4EySLgE0TlnKF-yOrG4QZNfmwSsLgNK2PBShye264nnolwlqn39r4b9MB5CbkLKJj1X9i0RIN8vVy168Om7CE6b07C5cQbGr4E50h_oIbLwQjp3zyFjxpyK5n5aB7odbNckpH0kFVrNm5qgnmW3KHEMZF_eUlO4nt9FRzSY4ldL3DlrfvYj71BqGfHew",
+                  "active": true,
+                  "description": ""
+                }
+              ],
+              "preRequestScript": "",
+              "testScript": "",
+              "auth": {
+                "authType": "none",
+                "authActive": true
+              },
+              "body": {
+                "contentType": null,
+                "body": null
+              },
+              "requestVariables": [],
+              "responses": {}
+            },
+            {
+              "v": "11",
+              "name": "Admin endpoint",
+              "method": "GET",
+              "endpoint": "http://localhost:8080/gateway-api/iam/admin",
+              "params": [],
+              "headers": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ4cTI2QjZWaDN6WTFDS213N2ZhSFF6M2l6OGpibmJLRC1rTGxaUXU0M08wIn0.eyJleHAiOjE3NDM5NDg4OTYsImlhdCI6MTc0Mzk0ODU5NiwiYXV0aF90aW1lIjoxNzQzOTQ4NTk2LCJqdGkiOiIzYWVhMjRkNy1lYzZhLTQwZWQtYWY5NC1kZmZmZmZjNGJlZWUiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQzL3JlYWxtcy9nYXRld2F5LWFwaSIsInN1YiI6IjRmNDc0ODYzLTljNTgtNDkxOS1iOTU0LWZiMzVhYjM3ZmE3YiIsInR5cCI6IkJlYXJlciIsImF6cCI6ImdhdGV3YXktYXBpIiwic2lkIjoiNWY5OTMxMDctYzBjYi00ZWM1LWI1OTktMTBjNmE3MGNhOGZiIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXX0sInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJBZG1pbiBMaSIsInByZWZlcnJlZF91c2VybmFtZSI6ImFkbWluIiwiZ2l2ZW5fbmFtZSI6IkFkbWluIiwiZmFtaWx5X25hbWUiOiJMaSIsImVtYWlsIjoiY2x1QHdhbmRyZXJzLm9uZSJ9.DhfWWbDIW7R-IxW_cI1IzAnhVXBR0qid4bD8YljsEVu3lqkhGk_5JmQxEpVEgjdtL0yvMvFcXkWYo42PhNgEqntEoKxK0uLnqjpgHbZpWqEuQA2shu01zg-FpT38-obF-Kl-4-TjjybfUYlQV153XCmKjX4EySLgE0TlnKF-yOrG4QZNfmwSsLgNK2PBShye264nnolwlqn39r4b9MB5CbkLKJj1X9i0RIN8vVy168Om7CE6b07C5cQbGr4E50h_oIbLwQjp3zyFjxpyK5n5aB7odbNckpH0kFVrNm5qgnmW3KHEMZF_eUlO4nt9FRzSY4ldL3DlrfvYj71BqGfHew",
+                  "active": true,
+                  "description": ""
+                }
+              ],
+              "preRequestScript": "",
+              "testScript": "",
+              "auth": {
+                "authType": "none",
+                "authActive": true
+              },
+              "body": {
+                "contentType": null,
+                "body": null
+              },
+              "requestVariables": [],
+              "responses": {}
+            }
+          ],
+          "auth": {
+            "authType": "inherit",
+            "authActive": true
+          },
+          "headers": [],
+          "_ref_id": "coll_m8ixoxi9_a511ff7d-97fb-4b50-9b06-f1d09fb11eea"
+        },
+        {
+          "v": 6,
+          "name": "route",
+          "folders": [],
+          "requests": [
+            {
+              "v": "11",
+              "name": "Route for simple API delay",
+              "method": "POST",
+              "endpoint": "http://localhost:8080/routing-api/route/simple_api/delay",
+              "params": [],
+              "headers": [],
+              "preRequestScript": "",
+              "testScript": "",
+              "auth": {
+                "authType": "none",
+                "authActive": true
+              },
+              "body": {
+                "contentType": "application/json",
+                "body": "{\n  \"delay\": 10000\n}"
+              },
+              "requestVariables": [],
+              "responses": {}
+            },
+            {
+              "v": "11",
+              "name": "Route for simple API echo",
+              "method": "POST",
+              "endpoint": "http://localhost:8080/routing-api/route/simple_api/echo",
+              "params": [],
+              "headers": [],
+              "preRequestScript": "",
+              "testScript": "",
+              "auth": {
+                "authType": "none",
+                "authActive": true
+              },
+              "body": {
+                "contentType": "application/json",
+                "body": "{\n  \"game\": \"Mobile Legends\",\n  \"gamerID\":\"GYUTDTE\",\n  \"points\":20\n}"
+              },
+              "requestVariables": [],
+              "responses": {}
+            }
+          ],
+          "auth": {
+            "authActive": true,
+            "authType": "inherit"
+          },
+          "headers": [],
+          "_ref_id": "coll_m8ixp2bc_85dece42-257f-4a28-b50d-82c811b83503"
+        }
+      ],
+      "requests": [
+        {
+          "v": "11",
+          "name": "Health check",
+          "method": "GET",
+          "endpoint": "http://localhost:8080/gateway-api/q/health/ready",
+          "params": [],
+          "headers": [],
+          "preRequestScript": "",
+          "testScript": "",
+          "auth": {
+            "authType": "none",
+            "authActive": true
+          },
+          "body": {
+            "contentType": "application/json",
+            "body": ""
+          },
+          "requestVariables": [],
+          "responses": {}
+        }
+      ],
+      "auth": {
+        "authType": "inherit",
+        "authActive": true
+      },
+      "headers": [],
+      "_ref_id": "coll_m7ucxz3w_71819ea9-7d3f-4c2f-847d-e74f91a83db4"
+    },
+    {
+      "v": 6,
+      "name": "Simple_API",
+      "folders": [],
+      "requests": [
+        {
+          "v": "11",
+          "name": "Echo with invalid JSON",
+          "method": "POST",
+          "endpoint": "http://localhost:8080/simple-api/rest_resource/echo",
+          "params": [],
+          "headers": [],
+          "preRequestScript": "",
+          "testScript": "",
+          "auth": {
+            "authType": "none",
+            "authActive": true
+          },
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"game\": \"Mobile Legends\",\n  \"gamerID\":\"GYUTDTE\",\n  \"points\":20\"\n}"
+          },
+          "requestVariables": [],
+          "responses": {}
+        },
+        {
+          "v": "11",
+          "name": "Echo with valid JSON",
+          "method": "POST",
+          "endpoint": "http://localhost:8080/simple-api/rest_resource/echo",
+          "params": [],
+          "headers": [],
+          "preRequestScript": "",
+          "testScript": "",
+          "auth": {
+            "authType": "none",
+            "authActive": true
+          },
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"game\": \"Mobile Legends\",\n  \"gamerID\":\"GYUTDTE\",\n  \"points\":20\n}"
+          },
+          "requestVariables": [],
+          "responses": {}
+        },
+        {
+          "v": "11",
+          "name": "Simulate server error",
+          "method": "POST",
+          "endpoint": "http://localhost:8084/simple-api/rest_resource/simulate_error",
+          "params": [],
+          "headers": [],
+          "preRequestScript": "",
+          "testScript": "",
+          "auth": {
+            "authType": "none",
+            "authActive": true
+          },
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"serverDown\": true,\n  \"recoverAfterMillis\": 20000\n}"
+          },
+          "requestVariables": [],
+          "responses": {}
+        },
+        {
+          "v": "11",
+          "name": "Set delay",
+          "method": "POST",
+          "endpoint": "http://localhost:8082/simple-api/rest_resource/delay",
+          "params": [],
+          "headers": [],
+          "preRequestScript": "",
+          "testScript": "",
+          "auth": {
+            "authType": "none",
+            "authActive": true
+          },
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"delay\": 5000\n}"
+          },
+          "requestVariables": [],
+          "responses": {}
+        }
+      ],
+      "auth": {
+        "authActive": true,
+        "authType": "inherit"
+      },
+      "headers": [],
+      "_ref_id": "coll_m7ucxz3w_48718ed1-5bc6-4f4a-b9f0-494ddec0ac80"
+    }
+  ],
+  "requests": [],
+  "auth": {
+    "authType": "inherit",
+    "authActive": true
+  },
+  "headers": [],
+  "_ref_id": "coll_m7ucxz3w_f1a11791-74d2-4b51-a3f2-40180e7a3b9e"
+}

@@ -6,4 +6,4 @@ USER root
 
 COPY ./spec/gateway-api .
 
-CMD ["run", "--vus", "1", "--duration", "5s", "-e", "ECHO_URL=http://gateway_api:8080/gateway-api/route/simple_api/echo", "echo.js"]
+CMD ["run", "--vus", "1", "--duration", "5s", "-e", "ECHO_URL=http://localhost:8080/gateway-api/route/simple_api/echo", "echo.js"]

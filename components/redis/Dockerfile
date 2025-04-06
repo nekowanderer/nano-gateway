@@ -1,6 +1,6 @@
 FROM redis:7.4.1
 
-COPY redis-cluster.conf /usr/local/etc/redis/redis-cluster.conf
+COPY conf/redis-cluster.conf /usr/local/etc/redis/redis-cluster.conf
 RUN chmod +r /usr/local/etc/redis/redis-cluster.conf
 
 COPY init-scripts/init-redis-cluster.sh /usr/local/bin/init-redis-cluster.sh
