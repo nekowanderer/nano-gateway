@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline
 
 COPY src ./src
 
-RUN mvn clean test verify package -Dquarkus.package.type=fast-jar -DskipTests=false
+RUN mvn clean test verify package -Dquarkus.package.jar.type=fast-jar -DskipTests=false
 
 ## Stage 2: The minimal docker image with command to run the application
 FROM amazoncorretto:17 AS app_execution
