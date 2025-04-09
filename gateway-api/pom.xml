@@ -83,6 +83,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-keycloak-authorization</artifactId>
         </dependency>
+        <!-- https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.9 -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-keycloak-admin-rest-client</artifactId>

@@ -1,4 +1,4 @@
-package idv.clu.gateway.resource.iam;
+package idv.clu.gateway.iam.resource;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
