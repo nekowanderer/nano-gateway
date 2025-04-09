@@ -41,3 +41,8 @@
 
 ## Export Realm
 - [Please refer to this article](https://simonscholz.dev/tutorials/keycloak-realm-export-import)
+- Log in into the keycloak container:
+```commandline
+$ /opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/export --users realm_file --realm gateway-api
+```
+
