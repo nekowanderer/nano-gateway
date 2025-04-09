@@ -1,5 +1,6 @@
 package idv.clu.gateway.iam.service;
 
+import idv.clu.gateway.iam.exception.UserNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -22,7 +23,13 @@ public class AdminClientService {
     }
 
     public List<UserRepresentation> listUsers(String targetRealm) {
-        return keycloak.realm(targetRealm).users().list();
+        List<UserRepresentation> users = keycloak.realm(targetRealm).users().list();
+
+        if (users == null || users.isEmpty()) {
+            throw new UserNotFoundException(targetRealm);
+        }
+
+        return users;
     }
 
 }

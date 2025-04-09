@@ -25,7 +25,6 @@ public class AdminResource {
         this.adminClientService = adminClientService;
     }
 
-    // TODO error handling/not found
     @GET
     @Path("list-users")
     @Produces(MediaType.APPLICATION_JSON)
