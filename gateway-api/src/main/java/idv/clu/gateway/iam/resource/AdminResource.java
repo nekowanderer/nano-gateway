@@ -55,12 +55,12 @@ public class AdminResource {
     }
 
     @POST
-    @Path("/{realmId}")
+    @Path("/{realmName}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createUser(@PathParam("realmId") String realmId, @RequestBody UserDTO userDTO) {
-        final String realmName = adminClientService.getRealmById(realmId).getRealm();
-        adminClientService.createUser(realmName, KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
+    public Response createUser(@PathParam("realmName") String realmName, @RequestBody UserDTO userDTO) {
+        adminClientService.createUser(adminClientService.getRealmByName(realmName).getRealm(),
+                KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
 
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", String.format("User: '%s' created successfully.", userDTO.getUsername()));
@@ -71,14 +71,13 @@ public class AdminResource {
     }
 
     @DELETE
-    @Path("/{realmId}/users/{userId}")
+    @Path("/{realmName}/users/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteUser(@PathParam("realmId") String realmId, @PathParam("userId") String userId) {
-        final String realmName = adminClientService.getRealmById(realmId).getRealm();
-        adminClientService.deleteUserOnRealm(realmName, userId);
+    public Response deleteUserByUsername(@PathParam("realmName") String realmName, @PathParam("username") String username) {
+        adminClientService.deleteUserOnRealm(adminClientService.getRealmByName(realmName).getRealm(), username);
 
         Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("message", String.format("User with id: '%s' deleted successfully", userId));
+        responseBody.put("message", String.format("User with id: '%s' deleted successfully", username));
 
         return Response.status(Response.Status.OK)
                 .entity(responseBody)

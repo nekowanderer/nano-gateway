@@ -56,13 +56,27 @@ public class AdminClientService {
         Optional<RealmRepresentation> realm = keycloak.realms()
                 .findAll()
                 .stream()
-                .filter(realmRepresentation -> realmRepresentation.getRealm().equals(realmId))
+                .filter(realmRepresentation -> realmRepresentation.getId().equals(realmId))
                 .findFirst();
 
         if (realm.isPresent()) {
             return realm.get();
         } else {
             throw new RealmNotFoundException(realmId);
+        }
+    }
+
+    public RealmRepresentation getRealmByName(final String realmName) {
+        Optional<RealmRepresentation> realm = keycloak.realms()
+                .findAll()
+                .stream()
+                .filter(realmRepresentation -> realmRepresentation.getRealm().equals(realmName))
+                .findFirst();
+
+        if (realm.isPresent()) {
+            return realm.get();
+        } else {
+            throw new RealmNotFoundException(realmName);
         }
     }
 
@@ -78,8 +92,9 @@ public class AdminClientService {
         }
     }
 
-    public void deleteUserOnRealm(final String realmName, final String userId) {
+    public void deleteUserOnRealm(final String realmName, final String username) {
         final UsersResource usersResource = keycloak.realm(realmName).users();
+        final String userId = usersResource.searchByUsername(username, true).stream().findFirst().orElseThrow().getId();
         final UserResource userResource = usersResource.get(userId);
         userResource.remove();
     }
