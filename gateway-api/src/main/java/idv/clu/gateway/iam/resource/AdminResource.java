@@ -1,7 +1,9 @@
 package idv.clu.gateway.iam.resource;
 
 import idv.clu.gateway.iam.dto.RealmDTO;
+import idv.clu.gateway.iam.dto.UserDTO;
 import idv.clu.gateway.iam.service.AdminClientService;
+import idv.clu.gateway.iam.transformer.KeycloakRepresentationTransformer;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -50,6 +52,37 @@ public class AdminResource {
         responseBody.put("message", String.format("Realm with id: '%s' deleted successfully", realmId));
 
         return Response.status(Response.Status.OK).entity(responseBody).build();
+    }
+
+    @POST
+    @Path("/{realmId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createUser(@PathParam("realmId") String realmId, @RequestBody UserDTO userDTO) {
+        final String realmName = adminClientService.getRealmById(realmId).getRealm();
+        adminClientService.createUser(realmName, KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
+
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", String.format("User: '%s' created successfully.", userDTO.getUsername()));
+
+        return Response.status(Response.Status.CREATED)
+                .entity(responseBody)
+                .build();
+    }
+
+    @DELETE
+    @Path("/{realmId}/users/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteUser(@PathParam("realmId") String realmId, @PathParam("userId") String userId) {
+        final String realmName = adminClientService.getRealmById(realmId).getRealm();
+        adminClientService.deleteUserOnRealm(realmName, userId);
+
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", String.format("User with id: '%s' deleted successfully", userId));
+
+        return Response.status(Response.Status.OK)
+                .entity(responseBody)
+                .build();
     }
 
     @GET

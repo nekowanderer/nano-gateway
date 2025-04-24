@@ -1,12 +1,16 @@
 package idv.clu.gateway.iam.service;
 
+import idv.clu.gateway.iam.dto.UserDTO;
 import idv.clu.gateway.iam.exception.RealmAlreadyExistsException;
 import idv.clu.gateway.iam.exception.RealmNotFoundException;
 import idv.clu.gateway.iam.exception.UserNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
@@ -45,18 +49,39 @@ public class AdminClientService {
     }
 
     public void deleteRealm(final String realmId) {
-        Optional<RealmRepresentation> realmToDelete = keycloak.realms()
+        keycloak.realm(getRealmById(realmId).getRealm()).remove();
+    }
+
+    public RealmRepresentation getRealmById(final String realmId) {
+        Optional<RealmRepresentation> realm = keycloak.realms()
                 .findAll()
                 .stream()
-                .filter(realm -> realm.getId().equals(realmId))
-                        .findFirst();
+                .filter(realmRepresentation -> realmRepresentation.getRealm().equals(realmId))
+                .findFirst();
 
-        if (realmToDelete.isPresent()) {
-            String realmName = realmToDelete.get().getRealm();
-            keycloak.realm(realmName).remove();
+        if (realm.isPresent()) {
+            return realm.get();
         } else {
             throw new RealmNotFoundException(realmId);
         }
+    }
+
+    public void createUser(final String realmName, final UserRepresentation userRepresentation) {
+        final UsersResource usersResource = keycloak.realm(realmName).users();
+
+        try (Response response = usersResource.create(userRepresentation)) {
+            if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
+                throw new RuntimeException("User already exists on realm: " + realmName);
+            } else if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {
+                throw new RuntimeException("Failed to create user on realm: " + realmName);
+            }
+        }
+    }
+
+    public void deleteUserOnRealm(final String realmName, final String userId) {
+        final UsersResource usersResource = keycloak.realm(realmName).users();
+        final UserResource userResource = usersResource.get(userId);
+        userResource.remove();
     }
 
     public List<UserRepresentation> listUsers(final String targetRealm) {
