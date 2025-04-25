@@ -1,8 +1,8 @@
 package idv.clu.gateway.iam.service;
 
-import idv.clu.gateway.iam.dto.UserDTO;
 import idv.clu.gateway.iam.exception.RealmAlreadyExistsException;
 import idv.clu.gateway.iam.exception.RealmNotFoundException;
+import idv.clu.gateway.iam.exception.UserAlreadyExistsException;
 import idv.clu.gateway.iam.exception.UserNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -85,7 +85,7 @@ public class AdminClientService {
 
         try (Response response = usersResource.create(userRepresentation)) {
             if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
-                throw new RuntimeException("User already exists on realm: " + realmName);
+                throw new UserAlreadyExistsException(realmName, userRepresentation.getUsername());
             } else if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {
                 throw new RuntimeException("Failed to create user on realm: " + realmName);
             }
@@ -94,19 +94,18 @@ public class AdminClientService {
 
     public void deleteUserOnRealm(final String realmName, final String username) {
         final UsersResource usersResource = keycloak.realm(realmName).users();
-        final String userId = usersResource.searchByUsername(username, true).stream().findFirst().orElseThrow().getId();
+        final String userId = usersResource
+                .searchByUsername(username, true)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException(realmName, username))
+                .getId();
         final UserResource userResource = usersResource.get(userId);
         userResource.remove();
     }
 
     public List<UserRepresentation> listUsers(final String targetRealm) {
-        final List<UserRepresentation> users = keycloak.realm(targetRealm).users().list();
-
-        if (users == null || users.isEmpty()) {
-            throw new UserNotFoundException(targetRealm);
-        }
-
-        return users;
+        return keycloak.realm(targetRealm).users().list();
     }
 
 }

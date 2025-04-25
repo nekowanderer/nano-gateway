@@ -1,7 +1,9 @@
 package idv.clu.gateway.iam.transformer;
 
+import idv.clu.gateway.iam.dto.RealmDTO;
 import idv.clu.gateway.iam.dto.UserDTO;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
@@ -26,6 +28,13 @@ public class KeycloakRepresentationTransformer {
         user.setRealmRoles(List.of("admin"));
 
         return user;
+    }
+
+    public static RealmDTO toRealmDTO(final RealmRepresentation realmRepresentation) {
+        return new RealmDTO(
+                realmRepresentation.getId(),
+                realmRepresentation.getRealm(),
+                realmRepresentation.isEnabled());
     }
 
 }

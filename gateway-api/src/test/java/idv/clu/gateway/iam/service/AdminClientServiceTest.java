@@ -75,11 +75,9 @@ class AdminClientServiceTest {
         when(realmResource.users()).thenReturn(usersResource);
         when(usersResource.list()).thenReturn(Collections.emptyList());
 
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, 
-                () -> adminClientService.listUsers(testRealm),
-                "Should throw UserNotFoundException when no users are found");
+        List<UserRepresentation> actualUsers = adminClientService.listUsers(testRealm);
 
-        assertEquals(testRealm, exception.getRealm(), "The exception realm should match the test realm");
+        assertEquals(Collections.emptyList(), actualUsers, "Should return empty list when no users are found");
     }
 
     @Test
@@ -90,11 +88,9 @@ class AdminClientServiceTest {
         when(realmResource.users()).thenReturn(usersResource);
         when(usersResource.list()).thenReturn(null);
 
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, 
-                () -> adminClientService.listUsers(testRealm),
-                "Should throw UserNotFoundException when users list is null");
+        List<UserRepresentation> actualUsers = adminClientService.listUsers(testRealm);
 
-        assertEquals(testRealm, exception.getRealm(), "The exception realm should match the test realm");
+        assertEquals(null, actualUsers, "Should return null when users list is null");
     }
 
     @Test

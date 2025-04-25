@@ -3,7 +3,6 @@ package idv.clu.gateway.iam.resource;
 import idv.clu.gateway.iam.dto.RealmDTO;
 import idv.clu.gateway.iam.exception.RealmAlreadyExistsException;
 import idv.clu.gateway.iam.exception.RealmNotFoundException;
-import idv.clu.gateway.iam.exception.UserNotFoundException;
 import idv.clu.gateway.iam.service.AdminClientService;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,9 +36,7 @@ class AdminResourceTest {
     void testCreateRealmSuccess() {
         String realmId = "test-realm-id";
         String realmName = "Test Realm";
-        RealmDTO realmDTO = new RealmDTO();
-        realmDTO.setRealmId(realmId);
-        realmDTO.setRealmName(realmName);
+        RealmDTO realmDTO = new RealmDTO(realmId, realmName, true);
 
         doNothing().when(adminClientService).createRealm(realmId, realmName);
 
@@ -64,9 +62,7 @@ class AdminResourceTest {
     void testCreateRealmThrowsRealmAlreadyExistsException() {
         String realmId = "existing-realm";
         String realmName = "Existing Realm";
-        RealmDTO realmDTO = new RealmDTO();
-        realmDTO.setRealmId(realmId);
-        realmDTO.setRealmName(realmName);
+        RealmDTO realmDTO = new RealmDTO(realmId, realmName, true);
 
         RealmAlreadyExistsException expectedException = new RealmAlreadyExistsException(realmId);
         doThrow(expectedException).when(adminClientService).createRealm(realmId, realmName);
@@ -116,16 +112,21 @@ class AdminResourceTest {
 
     @Test
     void testListUsersSuccess() {
-        String testRealm = "test-realm";
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
         List<UserRepresentation> expectedUsers = new ArrayList<>();
         UserRepresentation user1 = new UserRepresentation();
         user1.setId("user1-id");
         user1.setUsername("user1");
         expectedUsers.add(user1);
 
-        when(adminClientService.listUsers(testRealm)).thenReturn(expectedUsers);
+        org.keycloak.representations.idm.RealmRepresentation realmRepresentation = new org.keycloak.representations.idm.RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
 
-        try (Response response = adminResource.listUsers(testRealm)) {
+        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminClientService.listUsers(testRealmName)).thenReturn(expectedUsers);
+
+        try (Response response = adminResource.listUsers(testRealmId)) {
             assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
                     "Response status should be 200 OK");
             assertSame(expectedUsers, response.getEntity(),
@@ -134,16 +135,21 @@ class AdminResourceTest {
     }
 
     @Test
-    void testListUsersThrowsUserNotFoundException() {
-        String testRealm = "test-realm";
-        UserNotFoundException expectedException = new UserNotFoundException(testRealm);
+    void testListUsersReturnsEmptyList() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
 
-        when(adminClientService.listUsers(testRealm)).thenThrow(expectedException);
+        org.keycloak.representations.idm.RealmRepresentation realmRepresentation = new org.keycloak.representations.idm.RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
 
-        try (Response ignored = adminResource.listUsers(testRealm)) {
-            org.junit.jupiter.api.Assertions.fail("Expected UserNotFoundException to be thrown, but it was not");
-        } catch (UserNotFoundException thrown) {
-            assertEquals(testRealm, thrown.getRealm(), "Exception should contain correct realm");
+        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminClientService.listUsers(testRealmName)).thenReturn(Collections.emptyList());
+
+        try (Response response = adminResource.listUsers(testRealmId)) {
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
+                    "Response status should be 200 OK");
+            assertEquals(Collections.emptyList(), response.getEntity(),
+                    "Response entity should be an empty list");
         }
     }
 
