@@ -74,7 +74,7 @@ public class AdminResource {
                 KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
 
         Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("message", String.format("User: '%s' created successfully.", userDTO.getUsername()));
+        responseBody.put("message", String.format("User: '%s' created successfully.", userDTO.username()));
 
         return Response.status(Response.Status.CREATED)
                 .entity(responseBody)

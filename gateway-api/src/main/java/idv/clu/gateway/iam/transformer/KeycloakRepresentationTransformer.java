@@ -16,14 +16,14 @@ public class KeycloakRepresentationTransformer {
     public static UserRepresentation toUserRepresentation(final UserDTO userDTO) {
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue(userDTO.getPassword());
+        credential.setValue(userDTO.password());
 
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(userDTO.getUsername());
+        user.setUsername(userDTO.username());
         user.setCredentials(List.of(credential));
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setEmail(userDTO.getEmail());
+        user.setFirstName(userDTO.firstName());
+        user.setLastName(userDTO.lastName());
+        user.setEmail(userDTO.email());
         user.setEnabled(true);
         user.setRealmRoles(List.of("admin"));
 
