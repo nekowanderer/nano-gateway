@@ -3,7 +3,7 @@ package idv.clu.gateway.iam.resource;
 import idv.clu.gateway.iam.dto.RealmDTO;
 import idv.clu.gateway.iam.exception.RealmAlreadyExistsException;
 import idv.clu.gateway.iam.exception.RealmNotFoundException;
-import idv.clu.gateway.iam.service.AdminClientService;
+import idv.clu.gateway.iam.service.AdminRealmService;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,17 +15,17 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class AdminResourceTest {
+class AdminRealmResourceTest {
 
     @Mock
-    private AdminClientService adminClientService;
+    private AdminRealmService adminRealmService;
 
-    private AdminResource adminResource;
+    private AdminRealmResource adminRealmResource;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        adminResource = new AdminResource(adminClientService);
+        adminRealmResource = new AdminRealmResource(adminRealmService);
     }
 
     @Test
@@ -34,9 +34,9 @@ class AdminResourceTest {
         String realmName = "Test Realm";
         RealmDTO realmDTO = new RealmDTO(realmId, realmName, true);
 
-        doNothing().when(adminClientService).createRealm(realmId, realmName);
+        doNothing().when(adminRealmService).createRealm(realmId, realmName);
 
-        Response response = adminResource.createRealm(realmDTO);
+        Response response = adminRealmResource.createRealm(realmDTO);
 
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus(), 
                 "Response status should be 201 CREATED");
@@ -51,7 +51,7 @@ class AdminResourceTest {
         assertTrue(entityMap.containsKey("message"), "Response should contain a message");
         assertTrue(entityMap.get("message").contains(realmName), "Message should contain the realm name");
 
-        verify(adminClientService).createRealm(realmId, realmName);
+        verify(adminRealmService).createRealm(realmId, realmName);
     }
 
     @Test
@@ -61,21 +61,21 @@ class AdminResourceTest {
         RealmDTO realmDTO = new RealmDTO(realmId, realmName, true);
 
         RealmAlreadyExistsException expectedException = new RealmAlreadyExistsException(realmId);
-        doThrow(expectedException).when(adminClientService).createRealm(realmId, realmName);
+        doThrow(expectedException).when(adminRealmService).createRealm(realmId, realmName);
 
-        assertThrows(RealmAlreadyExistsException.class, () -> adminResource.createRealm(realmDTO),
+        assertThrows(RealmAlreadyExistsException.class, () -> adminRealmResource.createRealm(realmDTO),
                 "Should throw RealmAlreadyExistsException");
 
-        verify(adminClientService).createRealm(realmId, realmName);
+        verify(adminRealmService).createRealm(realmId, realmName);
     }
 
     @Test
     void testDeleteRealmSuccess() {
         String realmId = "test-realm-id";
 
-        doNothing().when(adminClientService).deleteRealm(realmId);
+        doNothing().when(adminRealmService).deleteRealm(realmId);
 
-        Response response = adminResource.deleteRealm(realmId);
+        Response response = adminRealmResource.deleteRealm(realmId);
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(), 
                 "Response status should be 200 OK");
@@ -90,7 +90,7 @@ class AdminResourceTest {
         assertTrue(entityMap.containsKey("message"), "Response should contain a message");
         assertTrue(entityMap.get("message").contains(realmId), "Message should contain the realm ID");
 
-        verify(adminClientService).deleteRealm(realmId);
+        verify(adminRealmService).deleteRealm(realmId);
     }
 
     @Test
@@ -99,12 +99,12 @@ class AdminResourceTest {
         String realmName = "non-existent-realm-name";
 
         RealmNotFoundException expectedException = new RealmNotFoundException(realmId, realmName);
-        doThrow(expectedException).when(adminClientService).deleteRealm(realmId);
+        doThrow(expectedException).when(adminRealmService).deleteRealm(realmId);
 
-        assertThrows(RealmNotFoundException.class, () -> adminResource.deleteRealm(realmId),
+        assertThrows(RealmNotFoundException.class, () -> adminRealmResource.deleteRealm(realmId),
                 "Should throw RealmNotFoundException");
 
-        verify(adminClientService).deleteRealm(realmId);
+        verify(adminRealmService).deleteRealm(realmId);
     }
 
 }

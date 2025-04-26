@@ -2,21 +2,17 @@ package idv.clu.gateway.iam.service;
 
 import idv.clu.gateway.iam.exception.RealmAlreadyExistsException;
 import idv.clu.gateway.iam.exception.RealmNotFoundException;
-import idv.clu.gateway.iam.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RealmsResource;
-import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,7 +22,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class AdminClientServiceTest {
+class AdminRealmServiceTest {
 
     @Mock
     private Keycloak keycloak;
@@ -37,12 +33,12 @@ class AdminClientServiceTest {
     @Mock
     private RealmsResource realmsResource;
 
-    private AdminClientService adminClientService;
+    private AdminRealmService adminRealmService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        adminClientService = new AdminClientService(keycloak);
+        adminRealmService = new AdminRealmService(keycloak);
         when(keycloak.realms()).thenReturn(realmsResource);
     }
 
@@ -58,7 +54,7 @@ class AdminClientServiceTest {
         when(realmsResource.findAll()).thenReturn(existingRealms);
         doNothing().when(realmsResource).create(any(RealmRepresentation.class));
 
-        adminClientService.createRealm(testRealmId, testRealmName);
+        adminRealmService.createRealm(testRealmId, testRealmName);
 
         ArgumentCaptor<RealmRepresentation> realmCaptor = ArgumentCaptor.forClass(RealmRepresentation.class);
         verify(realmsResource).create(realmCaptor.capture());
@@ -81,7 +77,7 @@ class AdminClientServiceTest {
         when(realmsResource.findAll()).thenReturn(existingRealms);
 
         RealmAlreadyExistsException exception = assertThrows(RealmAlreadyExistsException.class,
-                () -> adminClientService.createRealm(testRealmId, testRealmName),
+                () -> adminRealmService.createRealm(testRealmId, testRealmName),
                 "Should throw RealmAlreadyExistsException when realm already exists");
 
         assertEquals(testRealmId, exception.getRealmId(), "The exception realm ID should match the test realm ID");
@@ -102,7 +98,7 @@ class AdminClientServiceTest {
         when(keycloak.realm(testRealmName)).thenReturn(realmResource);
         doNothing().when(realmResource).remove();
 
-        adminClientService.deleteRealm(testRealmId);
+        adminRealmService.deleteRealm(testRealmId);
 
         verify(keycloak).realm(testRealmName);
         verify(realmResource).remove();
@@ -119,7 +115,7 @@ class AdminClientServiceTest {
         when(realmsResource.findAll()).thenReturn(existingRealms);
 
         RealmNotFoundException exception = assertThrows(RealmNotFoundException.class,
-                () -> adminClientService.deleteRealm(testRealmId),
+                () -> adminRealmService.deleteRealm(testRealmId),
                 "Should throw RealmNotFoundException when realm does not exist");
 
         assertEquals(testRealmId, exception.getRealmId(), "The exception realm ID should match the test realm ID");

@@ -1,7 +1,7 @@
 package idv.clu.gateway.iam.resource;
 
 import idv.clu.gateway.iam.dto.UserDTO;
-import idv.clu.gateway.iam.service.AdminClientService;
+import idv.clu.gateway.iam.service.AdminRealmService;
 import idv.clu.gateway.iam.service.AdminUserService;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class AdminUserResourceTest {
 
     @Mock
-    private AdminClientService adminClientService;
+    private AdminRealmService adminRealmService;
 
     @Mock
     private AdminUserService adminUserService;
@@ -41,7 +41,7 @@ public class AdminUserResourceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        adminUserResource = new AdminUserResource(adminClientService, adminUserService);
+        adminUserResource = new AdminUserResource(adminRealmService, adminUserService);
     }
 
     @Test
@@ -59,8 +59,8 @@ public class AdminUserResourceTest {
         RealmRepresentation realmRepresentation = new RealmRepresentation();
         realmRepresentation.setRealm(testRealmName);
 
-        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
-        when(adminClientService.getRealmByName(testRealmName)).thenReturn(realmRepresentation);
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminRealmService.getRealmByName(testRealmName)).thenReturn(realmRepresentation);
         doNothing().when(adminUserService).createUser(anyString(), any(UserRepresentation.class));
 
         try (Response response = adminUserResource.createUser(testRealmId, testUserDTO)) {
@@ -85,8 +85,8 @@ public class AdminUserResourceTest {
         RealmRepresentation realmRepresentation = new RealmRepresentation();
         realmRepresentation.setRealm(testRealmName);
 
-        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
-        when(adminClientService.getRealmByName(testRealmName)).thenReturn(realmRepresentation);
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminRealmService.getRealmByName(testRealmName)).thenReturn(realmRepresentation);
         doNothing().when(adminUserService).deleteUser(anyString(), anyString());
 
         try (Response response = adminUserResource.deleteUserByUsername(testRealmId, testUsername)) {
@@ -115,7 +115,7 @@ public class AdminUserResourceTest {
         org.keycloak.representations.idm.RealmRepresentation realmRepresentation = new org.keycloak.representations.idm.RealmRepresentation();
         realmRepresentation.setRealm(testRealmName);
 
-        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
         when(adminUserService.listUsers(testRealmName)).thenReturn(expectedUsers);
 
         try (Response response = adminUserResource.listUsers(testRealmId)) {
@@ -134,7 +134,7 @@ public class AdminUserResourceTest {
         org.keycloak.representations.idm.RealmRepresentation realmRepresentation = new org.keycloak.representations.idm.RealmRepresentation();
         realmRepresentation.setRealm(testRealmName);
 
-        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
         when(adminUserService.listUsers(testRealmName)).thenReturn(Collections.emptyList());
 
         try (Response response = adminUserResource.listUsers(testRealmId)) {

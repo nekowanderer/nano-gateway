@@ -14,12 +14,12 @@ import java.util.Optional;
  * @author clu
  */
 @ApplicationScoped
-public class AdminClientService {
+public class AdminRealmService {
 
     private final Keycloak keycloak;
 
     @Inject
-    public AdminClientService(@Named("masterRealmClient") Keycloak keycloak) {
+    public AdminRealmService(@Named("masterRealmClient") Keycloak keycloak) {
         this.keycloak = keycloak;
     }
 

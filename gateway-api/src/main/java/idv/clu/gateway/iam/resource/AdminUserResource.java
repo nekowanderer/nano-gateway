@@ -1,7 +1,7 @@
 package idv.clu.gateway.iam.resource;
 
 import idv.clu.gateway.iam.dto.UserDTO;
-import idv.clu.gateway.iam.service.AdminClientService;
+import idv.clu.gateway.iam.service.AdminRealmService;
 import idv.clu.gateway.iam.service.AdminUserService;
 import idv.clu.gateway.iam.transformer.KeycloakRepresentationTransformer;
 import jakarta.inject.Inject;
@@ -21,12 +21,12 @@ import java.util.Map;
 @Path("/iam/admin/realms")
 public class AdminUserResource {
 
-    private final AdminClientService adminClientService;
+    private final AdminRealmService adminRealmService;
     private final AdminUserService adminUserService;
 
     @Inject
-    public AdminUserResource(AdminClientService adminClientService, AdminUserService adminUserService) {
-        this.adminClientService = adminClientService;
+    public AdminUserResource(final AdminRealmService adminRealmService, final AdminUserService adminUserService) {
+        this.adminRealmService = adminRealmService;
         this.adminUserService = adminUserService;
     }
 
@@ -37,8 +37,8 @@ public class AdminUserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createUser(@PathParam("realmId") String realmId, @RequestBody UserDTO userDTO) {
-        final String realmName = adminClientService.getRealmById(realmId).getRealm();
-        adminUserService.createUser(adminClientService.getRealmByName(realmName).getRealm(),
+        final String realmName = adminRealmService.getRealmById(realmId).getRealm();
+        adminUserService.createUser(adminRealmService.getRealmByName(realmName).getRealm(),
                 KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
 
         Map<String, String> responseBody = new HashMap<>();
@@ -55,8 +55,8 @@ public class AdminUserResource {
     @Path("/{realmId}/users/{username}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteUserByUsername(@PathParam("realmId") String realmId, @PathParam("username") String username) {
-        final String realmName = adminClientService.getRealmById(realmId).getRealm();
-        adminUserService.deleteUser(adminClientService.getRealmByName(realmName).getRealm(), username);
+        final String realmName = adminRealmService.getRealmById(realmId).getRealm();
+        adminUserService.deleteUser(adminRealmService.getRealmByName(realmName).getRealm(), username);
 
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", String.format("User with id: '%s' deleted successfully", username));
@@ -75,7 +75,7 @@ public class AdminUserResource {
     @Path("/{realmId}/users")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listUsers(@PathParam("realmId") String realmId) {
-        final String realmName = adminClientService.getRealmById(realmId).getRealm();
+        final String realmName = adminRealmService.getRealmById(realmId).getRealm();
         List<UserRepresentation> users = adminUserService.listUsers(realmName);
         return Response.ok(users).build();
     }

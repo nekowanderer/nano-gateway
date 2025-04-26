@@ -1,7 +1,7 @@
 package idv.clu.gateway.iam.resource;
 
 import idv.clu.gateway.iam.dto.RealmDTO;
-import idv.clu.gateway.iam.service.AdminClientService;
+import idv.clu.gateway.iam.service.AdminRealmService;
 import idv.clu.gateway.iam.transformer.KeycloakRepresentationTransformer;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -16,13 +16,13 @@ import java.util.Map;
  * @author clu
  */
 @Path("/iam/admin/realms")
-public class AdminResource {
+public class AdminRealmResource {
 
-    private final AdminClientService adminClientService;
+    private final AdminRealmService adminRealmService;
 
     @Inject
-    public AdminResource(AdminClientService adminClientService) {
-        this.adminClientService = adminClientService;
+    public AdminRealmResource(AdminRealmService adminRealmService) {
+        this.adminRealmService = adminRealmService;
     }
 
     @GET
@@ -31,7 +31,7 @@ public class AdminResource {
     public Response searchRealmByName(@QueryParam("name") String realmName) {
         return Response.ok()
                 .entity(KeycloakRepresentationTransformer
-                        .toRealmDTO(adminClientService.getRealmByName(realmName)))
+                        .toRealmDTO(adminRealmService.getRealmByName(realmName)))
                 .build();
     }
 
@@ -39,7 +39,7 @@ public class AdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createRealm(@RequestBody RealmDTO realmDTO) {
-        adminClientService.createRealm(realmDTO.realmId(), realmDTO.realmName());
+        adminRealmService.createRealm(realmDTO.realmId(), realmDTO.realmName());
 
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", String.format("Realm: '%s' created successfully.", realmDTO.realmName()));
@@ -53,7 +53,7 @@ public class AdminResource {
     @Path("/{realmId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteRealm(@PathParam("realmId") String realmId) {
-        adminClientService.deleteRealm(realmId);
+        adminRealmService.deleteRealm(realmId);
 
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", String.format("Realm with id: '%s' deleted successfully", realmId));
@@ -61,7 +61,6 @@ public class AdminResource {
         return Response.status(Response.Status.OK).entity(responseBody).build();
     }
 
-    // TODO User CRUD can be move to a dedicated class
     // TODO Group CRUD (create another class) + put user to group + remove user from group
     // TODO Maybe extract all search functionalities to other classes
 
