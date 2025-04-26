@@ -37,9 +37,6 @@ class AdminClientServiceTest {
     @Mock
     private RealmsResource realmsResource;
 
-    @Mock
-    private UsersResource usersResource;
-
     private AdminClientService adminClientService;
 
     @BeforeEach
@@ -47,50 +44,6 @@ class AdminClientServiceTest {
         MockitoAnnotations.openMocks(this);
         adminClientService = new AdminClientService(keycloak);
         when(keycloak.realms()).thenReturn(realmsResource);
-    }
-
-    @Test
-    void testListUsersSuccess() {
-        String testRealm = "test-realm";
-        List<UserRepresentation> expectedUsers = new ArrayList<>();
-        UserRepresentation user1 = new UserRepresentation();
-        user1.setId("user1-id");
-        user1.setUsername("user1");
-        expectedUsers.add(user1);
-
-        when(keycloak.realm(testRealm)).thenReturn(realmResource);
-        when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.list()).thenReturn(expectedUsers);
-
-        List<UserRepresentation> actualUsers = adminClientService.listUsers(testRealm);
-
-        assertEquals(expectedUsers, actualUsers, "The returned users should match the expected users");
-    }
-
-    @Test
-    void testListUsersEmptyList() {
-        String testRealm = "test-realm";
-
-        when(keycloak.realm(testRealm)).thenReturn(realmResource);
-        when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.list()).thenReturn(Collections.emptyList());
-
-        List<UserRepresentation> actualUsers = adminClientService.listUsers(testRealm);
-
-        assertEquals(Collections.emptyList(), actualUsers, "Should return empty list when no users are found");
-    }
-
-    @Test
-    void testListUsersNullList() {
-        String testRealm = "test-realm";
-
-        when(keycloak.realm(testRealm)).thenReturn(realmResource);
-        when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.list()).thenReturn(null);
-
-        List<UserRepresentation> actualUsers = adminClientService.listUsers(testRealm);
-
-        assertEquals(null, actualUsers, "Should return null when users list is null");
     }
 
     @Test

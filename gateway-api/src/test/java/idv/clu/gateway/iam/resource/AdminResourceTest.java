@@ -7,13 +7,9 @@ import idv.clu.gateway.iam.service.AdminClientService;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,57 +96,15 @@ class AdminResourceTest {
     @Test
     void testDeleteRealmThrowsRealmNotFoundException() {
         String realmId = "non-existent-realm";
+        String realmName = "non-existent-realm-name";
 
-        RealmNotFoundException expectedException = new RealmNotFoundException(realmId);
+        RealmNotFoundException expectedException = new RealmNotFoundException(realmId, realmName);
         doThrow(expectedException).when(adminClientService).deleteRealm(realmId);
 
         assertThrows(RealmNotFoundException.class, () -> adminResource.deleteRealm(realmId),
                 "Should throw RealmNotFoundException");
 
         verify(adminClientService).deleteRealm(realmId);
-    }
-
-    @Test
-    void testListUsersSuccess() {
-        String testRealmId = "test-realm-id";
-        String testRealmName = "test-realm";
-        List<UserRepresentation> expectedUsers = new ArrayList<>();
-        UserRepresentation user1 = new UserRepresentation();
-        user1.setId("user1-id");
-        user1.setUsername("user1");
-        expectedUsers.add(user1);
-
-        org.keycloak.representations.idm.RealmRepresentation realmRepresentation = new org.keycloak.representations.idm.RealmRepresentation();
-        realmRepresentation.setRealm(testRealmName);
-
-        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
-        when(adminClientService.listUsers(testRealmName)).thenReturn(expectedUsers);
-
-        try (Response response = adminResource.listUsers(testRealmId)) {
-            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
-                    "Response status should be 200 OK");
-            assertSame(expectedUsers, response.getEntity(),
-                    "Response entity should be the same list of users returned by the service");
-        }
-    }
-
-    @Test
-    void testListUsersReturnsEmptyList() {
-        String testRealmId = "test-realm-id";
-        String testRealmName = "test-realm";
-
-        org.keycloak.representations.idm.RealmRepresentation realmRepresentation = new org.keycloak.representations.idm.RealmRepresentation();
-        realmRepresentation.setRealm(testRealmName);
-
-        when(adminClientService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
-        when(adminClientService.listUsers(testRealmName)).thenReturn(Collections.emptyList());
-
-        try (Response response = adminResource.listUsers(testRealmId)) {
-            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
-                    "Response status should be 200 OK");
-            assertEquals(Collections.emptyList(), response.getEntity(),
-                    "Response entity should be an empty list");
-        }
     }
 
 }

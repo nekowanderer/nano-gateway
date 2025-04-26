@@ -15,6 +15,7 @@ public class KeycloakRepresentationTransformer {
 
     public static UserRepresentation toUserRepresentation(final UserDTO userDTO) {
         CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setTemporary(false);
         credential.setType(CredentialRepresentation.PASSWORD);
         credential.setValue(userDTO.password());
 

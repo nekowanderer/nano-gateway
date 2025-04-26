@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,12 +16,14 @@ public class RealmNotFoundExceptionMapper implements ExceptionMapper<RealmNotFou
 
     @Override
     public Response toResponse(RealmNotFoundException e) {
+        final Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("error", "realm_not_found");
+        errorResponse.put("message", e.getMessage());
+        errorResponse.put("realmId", e.getRealmId());
+        errorResponse.put("realmName", e.getRealmName());
+
         return Response.status(Response.Status.NOT_FOUND)
-                .entity(Map.of(
-                        "error", "realm_not_found",
-                        "message", e.getMessage(),
-                        "realmId", e.getRealmId()
-                ))
+                .entity(errorResponse)
                 .build();
     }
 

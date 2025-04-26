@@ -21,7 +21,8 @@ class RealmNotFoundExceptionMapperTest {
     @Test
     void testToResponse() {
         String testRealmId = "test-realm";
-        RealmNotFoundException exception = new RealmNotFoundException(testRealmId);
+        String testRealmName = "test realm name";
+        RealmNotFoundException exception = new RealmNotFoundException(testRealmId, testRealmName);
 
         Response response = mapper.toResponse(exception);
 
