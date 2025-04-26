@@ -7,6 +7,7 @@ import idv.clu.gateway.iam.service.AdminRealmService;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.representations.idm.RealmRepresentation;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -105,6 +106,49 @@ class AdminRealmResourceTest {
                 "Should throw RealmNotFoundException");
 
         verify(adminRealmService).deleteRealm(realmId);
+    }
+
+    @Test
+    void testSearchRealmByNameSuccess() {
+        String realmId = "test-realm-id";
+        String realmName = "Test Realm";
+        boolean isEnabled = true;
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setId(realmId);
+        realmRepresentation.setRealm(realmName);
+        realmRepresentation.setEnabled(isEnabled);
+
+        when(adminRealmService.getRealmByName(realmName)).thenReturn(realmRepresentation);
+
+        Response response = adminRealmResource.searchRealmByName(realmName);
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
+                "Response status should be 200 OK");
+
+        Object entity = response.getEntity();
+        assertNotNull(entity, "Response entity should not be null");
+        assertInstanceOf(RealmDTO.class, entity, "Response entity should be a RealmDTO");
+
+        RealmDTO realmDTO = (RealmDTO) entity;
+        assertEquals(realmId, realmDTO.realmId(), "RealmDTO realmId should match");
+        assertEquals(realmName, realmDTO.realmName(), "RealmDTO realmName should match");
+        assertEquals(isEnabled, realmDTO.isEnabled(), "RealmDTO isEnabled should match");
+
+        verify(adminRealmService).getRealmByName(realmName);
+    }
+
+    @Test
+    void testSearchRealmByNameThrowsRealmNotFoundException() {
+        String realmName = "non-existent-realm";
+
+        RealmNotFoundException expectedException = new RealmNotFoundException(null, realmName);
+        when(adminRealmService.getRealmByName(realmName)).thenThrow(expectedException);
+
+        assertThrows(RealmNotFoundException.class, () -> adminRealmResource.searchRealmByName(realmName),
+                "Should throw RealmNotFoundException");
+
+        verify(adminRealmService).getRealmByName(realmName);
     }
 
 }

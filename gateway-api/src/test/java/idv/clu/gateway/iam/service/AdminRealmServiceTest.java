@@ -121,4 +121,39 @@ class AdminRealmServiceTest {
         assertEquals(testRealmId, exception.getRealmId(), "The exception realm ID should match the test realm ID");
     }
 
+    @Test
+    void testGetRealmByNameSuccess() {
+        String testRealmName = "test-realm-name";
+        List<RealmRepresentation> existingRealms = new ArrayList<>();
+        RealmRepresentation existingRealm = new RealmRepresentation();
+        existingRealm.setId("test-realm-id");
+        existingRealm.setRealm(testRealmName);
+        existingRealms.add(existingRealm);
+
+        when(realmsResource.findAll()).thenReturn(existingRealms);
+
+        RealmRepresentation result = adminRealmService.getRealmByName(testRealmName);
+
+        assertEquals(existingRealm.getId(), result.getId(), "The realm ID should match");
+        assertEquals(existingRealm.getRealm(), result.getRealm(), "The realm name should match");
+    }
+
+    @Test
+    void testGetRealmByNameNotFound() {
+        String testRealmName = "non-existent-realm";
+        List<RealmRepresentation> existingRealms = new ArrayList<>();
+        RealmRepresentation existingRealm = new RealmRepresentation();
+        existingRealm.setId("test-realm-id");
+        existingRealm.setRealm("different-realm-name");
+        existingRealms.add(existingRealm);
+
+        when(realmsResource.findAll()).thenReturn(existingRealms);
+
+        RealmNotFoundException exception = assertThrows(RealmNotFoundException.class,
+                () -> adminRealmService.getRealmByName(testRealmName),
+                "Should throw RealmNotFoundException when realm does not exist");
+
+        assertEquals(testRealmName, exception.getRealmName(), "The exception realm name should match the test realm name");
+    }
+
 }
