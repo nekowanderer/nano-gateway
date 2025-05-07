@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,13 +16,15 @@ public class UserNotFoundExceptionMapper implements ExceptionMapper<UserNotFound
 
     @Override
     public Response toResponse(UserNotFoundException e) {
+        final Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("error", "User not found.");
+        errorResponse.put("message", e.getMessage());
+        errorResponse.put("realm", e.getRealmName());
+        errorResponse.put("userId", e.getUserId());
+        errorResponse.put("username", e.getUsername());
+
         return Response.status(Response.Status.NOT_FOUND)
-                .entity(Map.of(
-                        "error", "User not found.",
-                        "message", e.getMessage(),
-                        "realm", e.getRealmName(),
-                        "username", e.getUsername()
-                ))
+                .entity(errorResponse)
                 .build();
     }
 

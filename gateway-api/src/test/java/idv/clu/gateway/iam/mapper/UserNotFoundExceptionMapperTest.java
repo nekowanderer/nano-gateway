@@ -22,7 +22,7 @@ class UserNotFoundExceptionMapperTest {
     void testToResponse() {
         String testRealm = "test-realm";
         String testUsername = "username";
-        UserNotFoundException exception = new UserNotFoundException(testRealm, testUsername);
+        UserNotFoundException exception = new UserNotFoundException(testRealm, null, testUsername);
 
         Response response = mapper.toResponse(exception);
 

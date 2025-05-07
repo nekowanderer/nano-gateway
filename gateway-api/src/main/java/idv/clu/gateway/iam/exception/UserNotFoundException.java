@@ -6,13 +6,14 @@ package idv.clu.gateway.iam.exception;
 public class UserNotFoundException extends RuntimeException {
 
     private final String realmName;
+    private final String userId;
     private final String username;
 
-    public UserNotFoundException(String realmName, String username) {
-        super(String.format("User '%s' not found in realm: %s", username, realmName));
+    public UserNotFoundException(String realmName, String userId, String username) {
+        super(String.format("User not found in realm: %s, userId: %s, username: %s", realmName, userId, username));
         this.realmName = realmName;
         this.username = username;
-
+        this.userId = userId;
     }
 
     public String getRealmName() {
@@ -21,6 +22,10 @@ public class UserNotFoundException extends RuntimeException {
 
     public String getUsername() {
         return username;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
 }

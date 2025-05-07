@@ -1,8 +1,15 @@
 package idv.clu.gateway.iam.service;
 
-import idv.clu.gateway.iam.exception.UserAlreadyExistsException;
-import idv.clu.gateway.iam.exception.UserNotFoundException;
-import jakarta.ws.rs.core.Response;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.admin.client.Keycloak;
@@ -12,14 +19,15 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import idv.clu.gateway.iam.exception.UserAlreadyExistsException;
+import idv.clu.gateway.iam.exception.UserNotFoundException;
+import jakarta.ws.rs.core.Response;
 
 /**
  * @author clu
@@ -106,10 +114,12 @@ public class AdminUserServiceTest {
         when(keycloak.realm(testRealm)).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
         when(usersResource.create(userRepresentation)).thenReturn(response);
+        when(response.getStatusInfo()).thenReturn(Response.Status.CREATED);
         when(response.getStatus()).thenReturn(Response.Status.CREATED.getStatusCode());
+        when(response.getLocation()).thenReturn(URI.create("mockUserID/5566-7788"));
 
-        assertDoesNotThrow(() -> adminClientService.createUser(testRealm, userRepresentation),
-                "Should not throw exception when user creation is successful");
+        String expectedUserId = "5566-7788";
+        assertEquals(expectedUserId, adminClientService.createUser(testRealm, userRepresentation));
 
         verify(usersResource).create(userRepresentation);
         verify(response).close();
@@ -162,20 +172,14 @@ public class AdminUserServiceTest {
         String username = "testUser";
         String userId = "user-id-123";
 
-        UserRepresentation userRepresentation = new UserRepresentation();
-        userRepresentation.setId(userId);
-        userRepresentation.setUsername(username);
-        List<UserRepresentation> foundUsers = Collections.singletonList(userRepresentation);
-
         when(keycloak.realm(testRealm)).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.searchByUsername(username, true)).thenReturn(foundUsers);
         when(usersResource.get(userId)).thenReturn(userResource);
+        doNothing().when(userResource).remove();
 
-        assertDoesNotThrow(() -> adminClientService.deleteUser(testRealm, username),
+        assertDoesNotThrow(() -> adminClientService.deleteUser(testRealm, userId),
                 "Should not throw exception when user deletion is successful");
 
-        verify(usersResource).searchByUsername(username, true);
         verify(usersResource).get(userId);
         verify(userResource).remove();
     }
@@ -183,20 +187,19 @@ public class AdminUserServiceTest {
     @Test
     void testDeleteUserNotFound() {
         String testRealm = "test-realm";
-        String username = "nonExistentUser";
+        String userId = "nonExistentUserId";
 
         when(keycloak.realm(testRealm)).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.searchByUsername(username, true)).thenReturn(Collections.emptyList());
+        when(usersResource.get(userId)).thenReturn(null);
 
         UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> adminClientService.deleteUser(testRealm, username),
+                () -> adminClientService.deleteUser(testRealm, userId),
                 "Should throw UserNotFoundException when user does not exist");
 
         assertEquals(testRealm, exception.getRealmName(), "Exception should contain correct realm name");
-        assertEquals(username, exception.getUsername(), "Exception should contain correct username");
-        verify(usersResource).searchByUsername(username, true);
-        verify(usersResource, never()).get(anyString());
+        assertEquals(userId, exception.getUserId(), "Exception should contain correct username");
+        verify(usersResource).get(userId);
         verify(userResource, never()).remove();
     }
 

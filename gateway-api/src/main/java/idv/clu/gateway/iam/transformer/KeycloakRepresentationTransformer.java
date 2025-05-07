@@ -31,6 +31,16 @@ public class KeycloakRepresentationTransformer {
         return user;
     }
 
+    public static UserDTO toUserDTO(final UserRepresentation userRepresentation) {
+        return new UserDTO(
+                userRepresentation.getUsername(),
+                "*****",
+                userRepresentation.getFirstName(),
+                userRepresentation.getLastName(),
+                userRepresentation.getEmail()
+        );
+    }
+
     public static RealmDTO toRealmDTO(final RealmRepresentation realmRepresentation) {
         return new RealmDTO(
                 realmRepresentation.getId(),

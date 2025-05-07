@@ -30,7 +30,19 @@ public class AdminUserResource {
         this.adminUserService = adminUserService;
     }
 
-    // TODO get user
+    @GET
+    @Path("/{realmId}/users/{username}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserByUsername(@PathParam("realmId") String realmId, @PathParam("username") String username) {
+        final UserRepresentation userRepresentation =
+                adminUserService.getUserByUsername(adminRealmService.getRealmById(realmId).getRealm(), username);
+
+        return Response.status(Response.Status.OK)
+                .entity(KeycloakRepresentationTransformer.toUserDTO(userRepresentation))
+                .build();
+    }
+
+    // TODO get by user ID
 
     @POST
     @Path("/{realmId}")
@@ -38,11 +50,13 @@ public class AdminUserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createUser(@PathParam("realmId") String realmId, @RequestBody UserDTO userDTO) {
         final String realmName = adminRealmService.getRealmById(realmId).getRealm();
-        adminUserService.createUser(adminRealmService.getRealmByName(realmName).getRealm(),
+        final String userId = adminUserService.createUser(adminRealmService.getRealmByName(realmName).getRealm(),
                 KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
 
+        // Check how to return the created user elegantly.
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", String.format("User: '%s' created successfully.", userDTO.username()));
+        responseBody.put("userId", userId);
 
         return Response.status(Response.Status.CREATED)
                 .entity(responseBody)
@@ -52,14 +66,14 @@ public class AdminUserResource {
     // TODO update user
 
     @DELETE
-    @Path("/{realmId}/users/{username}")
+    @Path("/{realmId}/users/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteUserByUsername(@PathParam("realmId") String realmId, @PathParam("username") String username) {
+    public Response deleteUserByUserId(@PathParam("realmId") String realmId, @PathParam("userId") String userId) {
         final String realmName = adminRealmService.getRealmById(realmId).getRealm();
-        adminUserService.deleteUser(adminRealmService.getRealmByName(realmName).getRealm(), username);
+        adminUserService.deleteUser(adminRealmService.getRealmByName(realmName).getRealm(), userId);
 
         Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("message", String.format("User with id: '%s' deleted successfully", username));
+        responseBody.put("message", String.format("User with id: '%s' deleted successfully", userId));
 
         return Response.status(Response.Status.OK)
                 .entity(responseBody)

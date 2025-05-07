@@ -55,13 +55,14 @@ public class AdminUserResourceTest {
                 "User",
                 "test.user@example.com"
         );
+        String createdUserId = "5566-7788";
 
         RealmRepresentation realmRepresentation = new RealmRepresentation();
         realmRepresentation.setRealm(testRealmName);
 
         when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
         when(adminRealmService.getRealmByName(testRealmName)).thenReturn(realmRepresentation);
-        doNothing().when(adminUserService).createUser(anyString(), any(UserRepresentation.class));
+        when(adminUserService.createUser(anyString(), any(UserRepresentation.class))).thenReturn(createdUserId);
 
         try (Response response = adminUserResource.createUser(testRealmId, testUserDTO)) {
             assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus(),
@@ -71,6 +72,7 @@ public class AdminUserResourceTest {
             assertEquals(String.format("User: '%s' created successfully.", testUserDTO.username()),
                     responseBody.get("message"),
                     "Response message should indicate successful creation");
+            assertEquals(createdUserId, responseBody.get("userId"), "Response should contain created user id");
 
             verify(adminUserService).createUser(anyString(), any(UserRepresentation.class));
         }
@@ -89,7 +91,7 @@ public class AdminUserResourceTest {
         when(adminRealmService.getRealmByName(testRealmName)).thenReturn(realmRepresentation);
         doNothing().when(adminUserService).deleteUser(anyString(), anyString());
 
-        try (Response response = adminUserResource.deleteUserByUsername(testRealmId, testUsername)) {
+        try (Response response = adminUserResource.deleteUserByUserId(testRealmId, testUsername)) {
             assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
                     "Response status should be 200 OK");
 
