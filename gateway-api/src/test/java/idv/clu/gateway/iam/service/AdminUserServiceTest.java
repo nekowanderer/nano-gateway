@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.admin.client.Keycloak;
@@ -23,6 +25,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import org.mockito.MockitoAnnotations;
 
 import idv.clu.gateway.iam.exception.UserAlreadyExistsException;
@@ -50,7 +53,13 @@ public class AdminUserServiceTest {
     private UserResource userResource;
 
     @Mock
+    private UserRepresentation userRepresentation;
+
+    @Mock
     private Response response;
+
+    @Mock
+    private ClientWebApplicationException clientWebApplicationException;
 
     private AdminUserService adminClientService;
 
@@ -59,6 +68,80 @@ public class AdminUserServiceTest {
         MockitoAnnotations.openMocks(this);
         adminClientService = new AdminUserService(keycloak);
         when(keycloak.realms()).thenReturn(realmsResource);
+    }
+
+    @Test
+    void testGetUserByIdSuccess() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        when(userResource.toRepresentation()).thenReturn(userRepresentation);
+
+        assertDoesNotThrow(() -> adminClientService.getUserById(testRealm, userId),
+                "Should not throw exception when user deletion is successful");
+
+        verify(usersResource).get(userId);
+        verify(userResource).toRepresentation();
+    }
+
+    @Test
+    void testGetUserByIdNotFound() {
+        String testRealm = "test-realm";
+        String userId = "nonExistentUserId";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(clientWebApplicationException.getResponse()).thenReturn(response);
+        when(response.getStatus()).thenReturn(Response.Status.NOT_FOUND.getStatusCode());
+        when(usersResource.get(userId)).thenThrow(clientWebApplicationException);
+
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
+                () -> adminClientService.getUserById(testRealm, userId),
+                "Should throw UserNotFoundException when user does not exist");
+
+        assertEquals(testRealm, exception.getRealmName(), "Exception should contain correct realm name");
+        assertEquals(userId, exception.getUserId(), "Exception should contain correct username");
+        verify(usersResource).get(userId);
+        verify(userResource, never()).toRepresentation();
+    }
+
+    @Test
+    void testGetUserByIdNotFoundButUnexpectedStatusCode() {
+        String testRealm = "test-realm";
+        String userId = "nonExistentUserId";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(clientWebApplicationException.getResponse()).thenReturn(response);
+        when(response.getStatus()).thenReturn(Response.Status.REQUEST_TIMEOUT.getStatusCode());
+        when(usersResource.get(userId)).thenThrow(clientWebApplicationException);
+
+        assertThrows(RuntimeException.class,
+                () -> adminClientService.getUserById(testRealm, userId),
+                "Should throw UserNotFoundException when user does not exist");
+
+        verify(usersResource).get(userId);
+        verify(userResource, never()).toRepresentation();
+    }
+
+    @Test
+    void testGetUserByIdWithUnexpectedException() {
+        String testRealm = "test-realm";
+        String userId = "nonExistentUserId";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenThrow(new RuntimeException());
+
+        assertThrows(RuntimeException.class,
+                () -> adminClientService.getUserById(testRealm, userId),
+                "Should throw RuntimeException when user does not exist");
+
+        verify(usersResource).get(userId);
+        verify(userResource, never()).toRepresentation();
     }
 
     @Test
@@ -169,7 +252,6 @@ public class AdminUserServiceTest {
     @Test
     void testDeleteUserSuccess() {
         String testRealm = "test-realm";
-        String username = "testUser";
         String userId = "user-id-123";
 
         when(keycloak.realm(testRealm)).thenReturn(realmResource);
@@ -191,7 +273,9 @@ public class AdminUserServiceTest {
 
         when(keycloak.realm(testRealm)).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.get(userId)).thenReturn(null);
+        when(clientWebApplicationException.getResponse()).thenReturn(response);
+        when(response.getStatus()).thenReturn(Response.Status.NOT_FOUND.getStatusCode());
+        when(usersResource.get(userId)).thenThrow(clientWebApplicationException);
 
         UserNotFoundException exception = assertThrows(UserNotFoundException.class,
                 () -> adminClientService.deleteUser(testRealm, userId),
@@ -201,6 +285,77 @@ public class AdminUserServiceTest {
         assertEquals(userId, exception.getUserId(), "Exception should contain correct username");
         verify(usersResource).get(userId);
         verify(userResource, never()).remove();
+    }
+
+    @Test
+    void testDeleteUserWithUnexpectedException() {
+        String testRealm = "test-realm";
+        String userId = "nonExistentUserId";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenThrow(new RuntimeException());
+
+        assertThrows(RuntimeException.class,
+                () -> adminClientService.deleteUser(testRealm, userId),
+                "Should throw RuntimeException when user does not exist");
+
+        verify(usersResource).get(userId);
+        verify(userResource, never()).remove();
+    }
+
+    @Test
+    void testGetUserByUsernameSuccess() {
+        String testRealm = "test-realm";
+        String username = "testUser";
+
+        UserRepresentation expectedUser = new UserRepresentation();
+        expectedUser.setUsername(username);
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.searchByUsername(username, true)).thenReturn(List.of(expectedUser));
+
+        UserRepresentation actualUser = adminClientService.getUserByUsername(testRealm, username);
+
+        assertEquals(expectedUser, actualUser, "The returned user should match the expected user");
+        verify(usersResource).searchByUsername(username, true);
+    }
+
+    @Test
+    void testGetUserByUsernameNotFound() {
+        String testRealm = "test-realm";
+        String username = "nonExistentUser";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.searchByUsername(username, true)).thenReturn(Collections.emptyList());
+
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
+                () -> adminClientService.getUserByUsername(testRealm, username),
+                "Should throw UserNotFoundException when username is not found");
+
+        assertEquals(testRealm, exception.getRealmName(), "Exception should contain correct realm name");
+        assertNull(exception.getUserId(), "Exception should have null userId since user ID wasn't provided");
+        assertEquals(username, exception.getUsername(), "Exception should contain correct username");
+        verify(usersResource).searchByUsername(username, true);
+    }
+
+    @Test
+    void testGetUserByUsernameUnexpectedException() {
+        String testRealm = "test-realm";
+        String username = "testUser";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.searchByUsername(username, true)).thenThrow(new RuntimeException("Unexpected error"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> adminClientService.getUserByUsername(testRealm, username),
+                "Should throw RuntimeException for unexpected errors");
+
+        assertTrue(exception.getMessage().contains("Unexpected error"), "The exception message should match the error");
+        verify(usersResource).searchByUsername(username, true);
     }
 
 }

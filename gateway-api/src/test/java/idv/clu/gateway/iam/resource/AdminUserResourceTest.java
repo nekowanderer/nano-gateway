@@ -1,6 +1,7 @@
 package idv.clu.gateway.iam.resource;
 
 import idv.clu.gateway.iam.dto.UserDTO;
+import idv.clu.gateway.iam.exception.UserNotFoundException;
 import idv.clu.gateway.iam.service.AdminRealmService;
 import idv.clu.gateway.iam.service.AdminUserService;
 import jakarta.ws.rs.core.Response;
@@ -17,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author clu
@@ -101,6 +102,110 @@ public class AdminUserResourceTest {
                     "Response message should indicate successful deletion");
 
             verify(adminUserService).deleteUser(anyString(), eq(testUsername));
+        }
+    }
+
+    @Test
+    void testGetUserByIdSuccess() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
+        String testUserId = "test-user-id";
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
+
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setId(testUserId);
+        userRepresentation.setUsername("testuser");
+
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminUserService.getUserById(testRealmName, testUserId)).thenReturn(userRepresentation);
+
+        try (Response response = adminUserResource.getUserById(testRealmId, testUserId)) {
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
+                    "Response status should be 200 OK");
+
+            UserRepresentation actualUser = (UserRepresentation) response.getEntity();
+            assertEquals(userRepresentation, actualUser, "Returned user should match the expected user");
+
+            verify(adminRealmService).getRealmById(testRealmId);
+            verify(adminUserService).getUserById(testRealmName, testUserId);
+        }
+    }
+
+    @Test
+    void testGetUserByIdUserNotFound() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
+        String testUserId = "non-existent-id";
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
+
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminUserService.getUserById(testRealmName, testUserId)).thenThrow(new UserNotFoundException(testRealmName, testUserId, null));
+
+        assertThrows(UserNotFoundException.class, () -> adminUserResource.getUserById(testRealmId, testUserId));
+
+        verify(adminRealmService).getRealmById(testRealmId);
+        verify(adminUserService).getUserById(testRealmName, testUserId);
+    }
+
+    @Test
+    void testGetUserByUsernameSuccess() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
+        String testUsername = "testuser";
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
+
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setUsername(testUsername);
+
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminUserService.getUserByUsername(testRealmName, testUsername)).thenReturn(userRepresentation);
+
+        try (Response response = adminUserResource.getUserByUsername(testRealmId, testUsername)) {
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
+                    "Response status should be 200 OK");
+
+            Object actualEntity = response.getEntity();
+            assertNotNull(actualEntity, "Response entity should not be null");
+            verify(adminRealmService).getRealmById(testRealmId);
+            verify(adminUserService).getUserByUsername(testRealmName, testUsername);
+        }
+    }
+
+    @Test
+    void testGetUserByUsernameNotFound() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
+        String testUsername = "nonexistent";
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
+
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        when(adminUserService.getUserByUsername(testRealmName, testUsername))
+                .thenThrow(new UserNotFoundException(testRealmName, null, testUsername));
+
+        assertThrows(UserNotFoundException.class, () -> adminUserResource.getUserByUsername(testRealmId, testUsername));
+
+        verify(adminRealmService).getRealmById(testRealmId);
+        verify(adminUserService).getUserByUsername(testRealmName, testUsername);
+    }
+
+    @Test
+    void testGetUserByUsernameBadRequest() {
+        String testRealmId = "test-realm-id";
+
+        try (Response response = adminUserResource.getUserByUsername(testRealmId, null)) {
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus(),
+                    "Response status should be 400 BAD_REQUEST");
+
+            verify(adminRealmService, never()).getRealmById(anyString());
+            verify(adminUserService, never()).getUserByUsername(anyString(), anyString());
         }
     }
 

@@ -5,20 +5,39 @@ import idv.clu.gateway.iam.exception.UserNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
- * @author clu
+ * Service class for managing and interacting with users in a Keycloak realm.
+ * This class provides functionality to retrieve, create, and delete users,
+ * as well as list all users within a specified realm. It uses the Keycloak
+ * Admin API to perform operations.
+ *
+ * The service relies on a Keycloak client injected at runtime for
+ * communication with the Keycloak server. It handles exceptions and provides
+ * meaningful error messages when entities are not found or already exist.
+ *
+ * Key features supported:
+ * - Retrieve user details by user ID or username.
+ * - Create new users within a realm.
+ * - Delete users from a realm.
+ * - List all users within a specified realm.
+ *
+ * Intended to be used as an application-scoped CDI bean.
  */
 @ApplicationScoped
 public class AdminUserService {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(AdminUserService.class);
 
     private final Keycloak keycloak;
 
@@ -27,6 +46,38 @@ public class AdminUserService {
         this.keycloak = keycloak;
     }
 
+    /**
+     * Retrieves a user by their unique identifier within a specified realm.
+     *
+     * @param realmName the name of the realm where the user is being searched
+     * @param userId the unique identifier of the user to retrieve
+     * @return the {@code UserRepresentation} object containing the user's details
+     * @throws UserNotFoundException if no user with the specified identifier is found in the given realm
+     * @throws RuntimeException if the retrieval process fails due to an unexpected error
+     */
+    public UserRepresentation getUserById(final String realmName, final String userId) {
+        try {
+            return keycloak.realm(realmName).users().get(userId).toRepresentation();
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException webEx
+                    && webEx.getResponse().getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+                int status = webEx.getResponse().getStatus();
+                LOGGER.warn("Get user failed: realm={}, userId={}, status={}", realmName, userId, status);
+                throw new UserNotFoundException(realmName, userId, null);
+            } else {
+                throw new RuntimeException(String.format("Failed to get user by Id: %s", userId));
+            }
+        }
+    }
+
+    /**
+     * Retrieves a user by their username within a specified realm.
+     *
+     * @param realmName the name of the realm where the user is being searched
+     * @param username the username of the user to retrieve
+     * @return the {@code UserRepresentation} object containing the user's details
+     * @throws UserNotFoundException if no user with the specified username is found in the specified realm
+     */
     public UserRepresentation getUserByUsername(final String realmName, final String username) {
         return keycloak
                 .realm(realmName)
@@ -37,6 +88,16 @@ public class AdminUserService {
                 .orElseThrow(() -> new UserNotFoundException(realmName, null, username));
     }
 
+    /**
+     * Creates a new user in the specified realm.
+     *
+     * @param realmName the name of the realm where the user will be created
+     * @param userRepresentation the {@code UserRepresentation} object containing
+     *                            the user's details such as username, email, and other information
+     * @return the ID of the newly created user as a {@code String}
+     * @throws UserAlreadyExistsException if a user with the same username already exists in the specified realm
+     * @throws RuntimeException if the user creation fails for other reasons
+     */
     public String createUser(final String realmName, final UserRepresentation userRepresentation) {
         final UsersResource usersResource = keycloak.realm(realmName).users();
 
@@ -51,17 +112,35 @@ public class AdminUserService {
         }
     }
 
+    /**
+     * Deletes a user identified by their unique identifier within a specific realm.
+     *
+     * @param realmName the name of the realm from which the user will be deleted
+     * @param userId the unique identifier of the user to delete
+     * @throws UserNotFoundException if the user with the specified identifier does not exist in the given realm
+     * @throws RuntimeException if the deletion process fails due to an unexpected error
+     */
     public void deleteUser(final String realmName, final String userId) {
-        final UsersResource usersResource = keycloak.realm(realmName).users();
-        final UserResource user = usersResource.get(userId);
-
-        if (user == null) {
-            throw new UserNotFoundException(realmName, userId, null);
-        } else {
-            user.remove();
+        try {
+            keycloak.realm(realmName).users().get(userId).remove();
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException webEx
+                    && webEx.getResponse().getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+                int status = webEx.getResponse().getStatus();
+                LOGGER.warn("Delete user failed: realm={}, userId={}, status={}", realmName, userId, status);
+                throw new UserNotFoundException(realmName, userId, null);
+            } else {
+                throw new RuntimeException("Failed to delete user: " + userId, e);
+            }
         }
     }
 
+    /**
+     * Retrieves a list of users within the specified target realm.
+     *
+     * @param targetRealm the name of the realm from which to retrieve the users
+     * @return a list of {@code UserRepresentation} objects representing the users in the specified realm
+     */
     public List<UserRepresentation> listUsers(final String targetRealm) {
         return keycloak.realm(targetRealm).users().list();
     }
