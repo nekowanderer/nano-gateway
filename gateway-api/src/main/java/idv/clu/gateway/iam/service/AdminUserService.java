@@ -1,5 +1,8 @@
 package idv.clu.gateway.iam.service;
 
+import idv.clu.gateway.iam.exception.GroupNotFoundException;
+import idv.clu.gateway.iam.exception.JoinGroupFailedException;
+import idv.clu.gateway.iam.exception.LeaveGroupFailedException;
 import idv.clu.gateway.iam.exception.UserAlreadyExistsException;
 import idv.clu.gateway.iam.exception.UserNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,7 +45,7 @@ public class AdminUserService {
     private final Keycloak keycloak;
 
     @Inject
-    public AdminUserService(@Named("masterRealmClient") Keycloak keycloak) {
+    public AdminUserService(final @Named("masterRealmClient") Keycloak keycloak) {
         this.keycloak = keycloak;
     }
 
@@ -109,6 +112,56 @@ public class AdminUserService {
             }
 
             return CreatedResponseUtil.getCreatedId(response);
+        }
+    }
+
+    /**
+     * Assigns a user to a group within a specified realm.
+     *
+     * @param realmName the name of the realm where the group and user are located
+     * @param groupId the unique identifier of the group to which the user will be assigned
+     * @param userId the unique identifier of the user to assign to the group
+     * @throws GroupNotFoundException if the specified group is not found in the given realm
+     * @throws JoinGroupFailedException if the assignment of the user to the group fails for other reasons
+     */
+    public void assignUserToGroup(final String realmName, final String groupId, final String userId) {
+        try {
+            keycloak.realm(realmName).users().get(userId).joinGroup(groupId);
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException webEx
+                    && webEx.getResponse().getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+                int status = webEx.getResponse().getStatus();
+                LOGGER.warn("Add user to group failed: realm={}, groupId={}, userId={}, status={}",
+                        realmName, groupId, userId, status);
+                throw new GroupNotFoundException(realmName, groupId);
+            } else {
+                throw new JoinGroupFailedException(realmName, groupId, userId);
+            }
+        }
+    }
+
+    /**
+     * Removes a user from a specific group within the given realm.
+     *
+     * @param realmName the name of the realm where the operation is performed
+     * @param groupId the unique identifier of the group from which the user will be removed
+     * @param userId the unique identifier of the user to be removed from the group
+     * @throws GroupNotFoundException if the specified group is not found in the realm
+     * @throws LeaveGroupFailedException if the operation to remove the user from the group fails
+     */
+    public void removeUserFromGroup(final String realmName, final String groupId, final String userId) {
+        try {
+            keycloak.realm(realmName).users().get(userId).leaveGroup(groupId);
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException webEx
+                    && webEx.getResponse().getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+                int status = webEx.getResponse().getStatus();
+                LOGGER.warn("Remove user from group failed: realm={}, groupId={}, userId={}, status={}",
+                        realmName, groupId, userId, status);
+                throw new GroupNotFoundException(realmName, groupId);
+            } else {
+                throw new LeaveGroupFailedException(realmName, groupId, userId);
+            }
         }
     }
 

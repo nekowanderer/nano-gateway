@@ -109,12 +109,72 @@ public class AdminUserResource {
         final String userId = adminUserService.createUser(adminRealmService.getRealmByName(realmName).getRealm(),
                 KeycloakRepresentationTransformer.toUserRepresentation(userDTO));
 
-        // Check how to return the created user elegantly.
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", String.format("User: '%s' created successfully.", userDTO.username()));
         responseBody.put("userId", userId);
 
         return Response.status(Response.Status.CREATED)
+                .entity(responseBody)
+                .build();
+    }
+
+    /**
+     * Assigns a user to a specific group within a realm. The operation ensures that the user is
+     * successfully added to the desired group and generates a response with confirmation details.
+     *
+     * @param realmId the unique identifier of the realm where the operation is performed
+     * @param groupId the unique identifier of the group to which the user will be assigned
+     * @param userId the unique identifier of the user to be added to the group
+     * @return a Response object containing a success message and the relevant details of the
+     *         assignment operation
+     */
+    @PUT
+    @Path("/{realmId}/groups/{groupId}/users/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assignUserToGroup(@PathParam("realmId") String realmId,
+                                      @PathParam("groupId") String groupId,
+                                      @PathParam("userId") String userId) {
+        final String realmName = adminRealmService.getRealmById(realmId).getRealm();
+        adminUserService.assignUserToGroup(realmName, groupId, userId);
+
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", String.format("User: '%s' joined group: '%s' successfully.", userId, groupId));
+        responseBody.put("realmName", realmName);
+        responseBody.put("groupId", groupId);
+        responseBody.put("userId", userId);
+
+        return Response.status(Response.Status.OK)
+                .entity(responseBody)
+                .build();
+    }
+
+    /**
+     * Removes a user from a specific group within the given realm. This operation ensures that
+     * the user is successfully removed from the group and returns a response with the relevant
+     * details of the operation.
+     *
+     * @param realmId the unique identifier of the realm where the operation is performed
+     * @param groupId the unique identifier of the group from which the user will be removed
+     * @param userId the unique identifier of the user to be removed from the group
+     * @return a Response object containing a success message and details of the operation if successful,
+     *         or an error response if the realm, group, or user doesn't exist
+     */
+    @DELETE
+    @Path("/{realmId}/groups/{groupId}/users/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removeUserFromGroup(@PathParam("realmId") String realmId,
+                                      @PathParam("groupId") String groupId,
+                                      @PathParam("userId") String userId) {
+        final String realmName = adminRealmService.getRealmById(realmId).getRealm();
+        adminUserService.removeUserFromGroup(realmName, groupId, userId);
+
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", String.format("User: '%s' leave group: '%s' successfully.", userId, groupId));
+        responseBody.put("realmName", realmName);
+        responseBody.put("groupId", groupId);
+        responseBody.put("userId", userId);
+
+        return Response.status(Response.Status.OK)
                 .entity(responseBody)
                 .build();
     }

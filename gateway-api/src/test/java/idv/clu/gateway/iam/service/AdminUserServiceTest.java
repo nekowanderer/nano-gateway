@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import idv.clu.gateway.iam.exception.GroupNotFoundException;
+import idv.clu.gateway.iam.exception.JoinGroupFailedException;
+import idv.clu.gateway.iam.exception.LeaveGroupFailedException;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,7 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -247,6 +251,124 @@ public class AdminUserServiceTest {
         assertTrue(exception.getMessage().contains(testRealm), "Exception message should contain realm name");
         verify(usersResource).create(userRepresentation);
         verify(response).close();
+    }
+
+    @Test
+    void testAssignUserToGroupSuccess() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+        String groupId = "group-id-abc";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        doNothing().when(userResource).joinGroup(groupId);
+
+        assertDoesNotThrow(() -> adminClientService.assignUserToGroup(testRealm, groupId, userId),
+                "Should not throw exception when user is assigned to group successfully");
+
+        verify(usersResource).get(userId);
+        verify(userResource).joinGroup(groupId);
+    }
+
+    @Test
+    void testAssignUserToGroupGroupNotFound() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+        String groupId = "missing-group";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        when(clientWebApplicationException.getResponse()).thenReturn(response);
+        when(response.getStatus()).thenReturn(Response.Status.NOT_FOUND.getStatusCode());
+        doThrow(clientWebApplicationException).when(userResource).joinGroup(groupId);
+
+        GroupNotFoundException exception = assertThrows(GroupNotFoundException.class,
+                () -> adminClientService.assignUserToGroup(testRealm, groupId, userId),
+                "Should throw GroupNotFoundException when group is not found");
+
+        assertEquals(testRealm, exception.getRealmName());
+        assertEquals(groupId, exception.getGroupId());
+        verify(userResource).joinGroup(groupId);
+    }
+
+    @Test
+    void testAssignUserToGroupUnexpectedException() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+        String groupId = "group-id-abc";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        doThrow(new RuntimeException("boom")).when(userResource).joinGroup(groupId);
+
+        JoinGroupFailedException exception = assertThrows(JoinGroupFailedException.class,
+                () -> adminClientService.assignUserToGroup(testRealm, groupId, userId));
+
+        assertEquals(testRealm, exception.getRealmName());
+        assertEquals(groupId, exception.getGroupId());
+        assertEquals(userId, exception.getUserId());
+        verify(userResource).joinGroup(groupId);
+    }
+
+    @Test
+    void testRemoveUserFromGroupSuccess() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+        String groupId = "group-id-abc";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        doNothing().when(userResource).leaveGroup(groupId);
+
+        assertDoesNotThrow(() -> adminClientService.removeUserFromGroup(testRealm, groupId, userId),
+                "Should not throw exception when user is removed from group successfully");
+
+        verify(userResource).leaveGroup(groupId);
+    }
+
+    @Test
+    void testRemoveUserFromGroupGroupNotFound() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+        String groupId = "missing-group";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        when(clientWebApplicationException.getResponse()).thenReturn(response);
+        when(response.getStatus()).thenReturn(Response.Status.NOT_FOUND.getStatusCode());
+        doThrow(clientWebApplicationException).when(userResource).leaveGroup(groupId);
+
+        GroupNotFoundException exception = assertThrows(GroupNotFoundException.class,
+                () -> adminClientService.removeUserFromGroup(testRealm, groupId, userId));
+
+        assertEquals(testRealm, exception.getRealmName());
+        assertEquals(groupId, exception.getGroupId());
+        verify(userResource).leaveGroup(groupId);
+    }
+
+    @Test
+    void testRemoveUserFromGroupUnexpectedException() {
+        String testRealm = "test-realm";
+        String userId = "user-id-123";
+        String groupId = "group-id-abc";
+
+        when(keycloak.realm(testRealm)).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.get(userId)).thenReturn(userResource);
+        doThrow(new RuntimeException("oops")).when(userResource).leaveGroup(groupId);
+
+        LeaveGroupFailedException exception = assertThrows(LeaveGroupFailedException.class,
+                () -> adminClientService.removeUserFromGroup(testRealm, groupId, userId));
+
+        assertEquals(testRealm, exception.getRealmName());
+        assertEquals(groupId, exception.getGroupId());
+        assertEquals(userId, exception.getUserId());
+        verify(userResource).leaveGroup(groupId);
     }
 
     @Test

@@ -80,6 +80,62 @@ public class AdminUserResourceTest {
     }
 
     @Test
+    void testAssignUserToGroupSuccess() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
+        String userId = "user-123";
+        String groupId = "group-abc";
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
+
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        doNothing().when(adminUserService).assignUserToGroup(testRealmName, groupId, userId);
+
+        try (Response response = adminUserResource.assignUserToGroup(testRealmId, groupId, userId)) {
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
+                    "Response status should be 200 OK");
+
+            Map<String, String> body = (Map<String, String>) response.getEntity();
+            assertEquals("User: 'user-123' joined group: 'group-abc' successfully.", body.get("message"));
+            assertEquals(testRealmName, body.get("realmName"));
+            assertEquals(groupId, body.get("groupId"));
+            assertEquals(userId, body.get("userId"));
+
+            verify(adminRealmService).getRealmById(testRealmId);
+            verify(adminUserService).assignUserToGroup(testRealmName, groupId, userId);
+        }
+    }
+
+    @Test
+    void testRemoveUserFromGroupSuccess() {
+        String testRealmId = "test-realm-id";
+        String testRealmName = "test-realm";
+        String userId = "user-123";
+        String groupId = "group-abc";
+
+        RealmRepresentation realmRepresentation = new RealmRepresentation();
+        realmRepresentation.setRealm(testRealmName);
+
+        when(adminRealmService.getRealmById(testRealmId)).thenReturn(realmRepresentation);
+        doNothing().when(adminUserService).removeUserFromGroup(testRealmName, groupId, userId);
+
+        try (Response response = adminUserResource.removeUserFromGroup(testRealmId, groupId, userId)) {
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(),
+                    "Response status should be 200 OK");
+
+            Map<String, String> body = (Map<String, String>) response.getEntity();
+            assertEquals("User: 'user-123' leave group: 'group-abc' successfully.", body.get("message"));
+            assertEquals(testRealmName, body.get("realmName"));
+            assertEquals(groupId, body.get("groupId"));
+            assertEquals(userId, body.get("userId"));
+
+            verify(adminRealmService).getRealmById(testRealmId);
+            verify(adminUserService).removeUserFromGroup(testRealmName, groupId, userId);
+        }
+    }
+
+    @Test
     void testDeleteUserByUsernameSuccess() {
         String testRealmId = "test-realm-id";
         String testRealmName = "test-realm";
