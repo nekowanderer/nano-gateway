@@ -22,7 +22,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.21.1</quarkus.platform.version>
+        <quarkus.platform.version>3.22.2</quarkus.platform.version>
         <okhttp-client.version>4.12.0</okhttp-client.version>
         <quarkus-keycloak-admin-rest-client.version>3.22.2</quarkus-keycloak-admin-rest-client.version>
         <mockito-junit-jupiter.version>5.5.0</mockito-junit-jupiter.version>
