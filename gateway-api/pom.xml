@@ -27,7 +27,7 @@
         <quarkus-keycloak-admin-rest-client.version>3.21.1</quarkus-keycloak-admin-rest-client.version>
         <mockito-junit-jupiter.version>5.5.0</mockito-junit-jupiter.version>
         <skipITs>true</skipITs>
-        <surefire-plugin.version>3.5.2</surefire-plugin.version>
+        <surefire-plugin.version>3.5.3</surefire-plugin.version>
     </properties>
 
     <dependencyManagement>
