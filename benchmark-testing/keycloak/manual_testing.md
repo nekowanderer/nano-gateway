@@ -165,4 +165,4 @@ This will delete the instances and related resources, and the local inventory fi
 This step is critical since if we don’t delete it, we’ll be charged by AWS.
 
 ### References
-- [Keycloak Benchmark Guide](https://www.keycloak.org/keycloak-benchmark/benchmark-guide/latest/) 
+- [Keycloak Benchmark Guide](https://www.keycloak.org/keycloak-benchmark/benchmark-guide/latest/)

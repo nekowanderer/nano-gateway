@@ -1,0 +1,38 @@
+- name: Update system packages on the remote hosts
+  when: update_system_packages
+  package: name=* state=latest
+
+- name: Install Java {{ java_version }} packages on the remote hosts
+  when: install_java
+  package:
+    name: ["java-{{ java_version }}-openjdk", "java-{{ java_version }}-openjdk-devel"]
+    state: present
+
+- name: Install unzip on the remote hosts
+  package: name=unzip state=present
+
+- name: Install jq
+  package: name=jq state=present
+
+- name: Install dig
+  package: name=bind-utils state=present
+
+- name: Download & install OpenShift client
+  unarchive:
+    src: "https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz"
+    dest: /usr/bin/
+    remote_src: yes
+    creates: /usr/bin/oc
+
+- name: Copy keycloak-benchmark {{ kcb_version }} on the remote hosts
+  copy:
+    src: "{{ kcb_zip }}"
+    dest: "/tmp/kcb.zip"
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Install keycloak-benchmark on the remote hosts
+  unarchive:
+    remote_src: true
+    src: "/tmp/kcb.zip"
+    dest: "{{ workspace }}"
+    owner: "{{ ansible_ssh_user }}"
