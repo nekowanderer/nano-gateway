@@ -15,7 +15,7 @@
 - Maven 3.9.9
 - Redis (7.x)
 - PostgreSQL (16.8)
-- Keycloak (26.1.4)
+- Keycloak (26.2.4)
 - Bruno/Hoppscotch (For end-to-end testing)
 - Grafana k6 (For load testing)
 - Containerization (Docker, Docker Compose)
