@@ -9,6 +9,10 @@ This project provides tools and scripts to perform benchmark testing on an exist
 - AWS CLI configured and logged in
 - Ansible
 - Keycloak 26.2.4 or newer
+- Configure `benchmark-runner/env.yml`:
+  - Set `kcb_version` according to your Keycloak cluster version
+  - Available versions can be found in [Keycloak Benchmark releases](https://github.com/keycloak/keycloak-benchmark/releases)
+  - For example, use `26.2-SNAPSHOT` for Keycloak 26.2.x
 
 ### Installation Steps
 
