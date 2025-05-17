@@ -1,0 +1,7 @@
+# Benchmark Runner
+###########
+*_inventory.yml
+*.pem
+*.log
+ansible.log
+files/

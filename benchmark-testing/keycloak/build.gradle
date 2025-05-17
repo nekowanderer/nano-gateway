@@ -1,0 +1,43 @@
+plugins {
+    id 'base'
+}
+
+tasks.register('runBenchmark', Exec) {
+    description = 'Run Keycloak performance test'
+    group = 'benchmark'
+
+    // Set script executable permission
+    doFirst {
+        file('kcb-ci-runner.sh').setExecutable(true)
+        file('benchmark-runner/benchmark.sh').setExecutable(true)
+        file('benchmark-runner/aws_ec2.sh').setExecutable(true)
+    }
+
+    // Execute script
+    commandLine './kcb-ci-runner.sh'
+
+    // Support passing parameters
+    if (project.hasProperty('region')) {
+        args '--region', project.property('region')
+    }
+    if (project.hasProperty('scenario')) {
+        args '--scenario', project.property('scenario')
+    }
+    if (project.hasProperty('serverUrl')) {
+        args '--server-url', project.property('serverUrl')
+    }
+    if (project.hasProperty('measurement')) {
+        args '--measurement', project.property('measurement')
+    }
+    if (project.hasProperty('usersPerSec')) {
+        args '--users-per-sec', project.property('usersPerSec')
+    }
+    if (project.hasProperty('realmName')) {
+        args '--realm-name', project.property('realmName')
+    }
+    if (project.hasProperty('clientsPerRealm')) {
+        args '--clients-per-realm', project.property('clientsPerRealm')
+    }
+}
+
+defaultTasks 'cleanBenchmarkReports', 'runBenchmark' 
