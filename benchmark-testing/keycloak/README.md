@@ -12,11 +12,8 @@ This project provides tools and scripts to perform benchmark testing on an exist
 
 ### Installation Steps
 
-1. Set up environment variables:
-```bash
-export KEYCLOAK_HOME=PATH_TO_YOUR_KEYCLOAK/keycloak-26.2.4
-export PATH=$PATH:$KEYCLOAK_HOME/bin
-```
+1. Initialize benchmark entities
+- Please refer to [Keycloak Branchmark Testing Guide](Keycloak_branchmark_testing_manual.md) for more details.
 
 2. Run the test:
 ```bash
@@ -35,16 +32,16 @@ export PATH=$PATH:$KEYCLOAK_HOME/bin
 | Parameter | Description |
 |-----------|-------------|
 | `region` | AWS region |
-| `scenario` | Test scenario |
-| `serverUrl` | Keycloak server URL |
-| `measurement` | Test duration in seconds |
-| `usersPerSec` | Number of simulated users per second |
-| `realmName` | Keycloak realm name |
-| `clientsPerRealm` | Number of clients per realm |
+| `scenario` | Defines the Gatling scenario to run. A scenario simulates a specific type of user behavior, such as logging in with client credentials or executing token refreshes. You can find the list of available scenarios [here](https://www.keycloak.org/keycloak-benchmark/benchmark-guide/latest/scenario-overview). |
+| `serverUrl` | The base URL of the Keycloak instance you want to test (e.g., the load balancer endpoint or public-facing Keycloak address). |
+| `measurement` | Duration of the test in seconds. This defines how long the benchmark will run and continuously apply load to the Keycloak server. |
+| `usersPerSec` | Number of virtual users to simulate per second. This controls the request load rate generated during the benchmark. |
+| `realmName` | The name of the Keycloak realm to be used in the benchmark. This must match the realm created during initialization. |
+| `clientsPerRealm` | Number of client IDs per realm used in the benchmark test. This should correspond to the number of clients generated during test data setup. |
 
 ## Documentation
 
-- [Manual Testing Guide](manual_testing.md) - Complete setup and testing procedures
+- [Keycloak Branchmark Testing Guide](Keycloak_branchmark_testing_manual.md) - Complete setup and testing procedures
 - [Keycloak Benchmark Official Documentation](https://www.keycloak.org/keycloak-benchmark/benchmark-guide/latest/)
 
 ## Important Notes
