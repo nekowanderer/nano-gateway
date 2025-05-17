@@ -2,6 +2,24 @@ plugins {
     id 'base'
 }
 
+tasks.register('cleanBenchmarkReports', Delete) {
+    description = 'Clean benchmark reports directory'
+    group = 'build'
+    
+    doFirst {
+        def reportsDir = file('benchmark-runner/reports')
+        println "Cleaning reports directory: ${reportsDir.absolutePath}"
+    }
+    
+    delete fileTree('benchmark-runner/reports') {
+        include '**/*'
+    }
+    
+    doLast {
+        println "Reports directory cleaned"
+    }
+}
+
 tasks.register('runBenchmark', Exec) {
     description = 'Run Keycloak performance test'
     group = 'benchmark'
@@ -40,5 +58,4 @@ tasks.register('runBenchmark', Exec) {
     }
 }
 
-// Set default task
-defaultTasks 'runBenchmark' 
+defaultTasks 'cleanBenchmarkReports', 'runBenchmark' 

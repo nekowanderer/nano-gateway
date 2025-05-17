@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-# Enable Gradle colored output
-export GRADLE_OPTS="-Dorg.gradle.console=rich"
-
 # Default values (can be overridden by environment variables)
 AWS_REGION=${AWS_REGION:-"ap-northeast-1"}
 SCENARIO=${SCENARIO:-"authentication.AuthorizationCode"}
