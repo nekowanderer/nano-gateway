@@ -1,0 +1,17 @@
+services:
+  benchmark:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - ./results:/benchmark-results
+      - ./aggregated-report:/benchmark/aggregated-report
+    environment:
+      - TZ=Asia/Taipei
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - USERS_PER_SEC=${USERS_PER_SEC}
+      - MEASUREMENT_TIME=${MEASUREMENT_TIME}
+      - REALM_NAME=${REALM_NAME}
+      - CLIENTS_PER_REALM=${CLIENTS_PER_REALM}
+      - SCENARIO=${SCENARIO}
+      - SCENARIO_SUFFIX=${SCENARIO_SUFFIX}
