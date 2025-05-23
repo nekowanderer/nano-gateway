@@ -208,7 +208,14 @@ class ResultsAggregator:
         if self.html_template_dir:
             return True
         
-        # Search for directories with index.html
+        # First, try to use aggregated-report-template if it exists
+        template_dir = "./aggregated-report-template"
+        if os.path.exists(os.path.join(template_dir, "index.html")):
+            self.html_template_dir = template_dir
+            print(f"HTML template directory found: {self.html_template_dir}")
+            return True
+        
+        # Fall back to search for directories with index.html in results
         result_dirs = glob.glob(os.path.join(self.results_dir, f"{self.scenario}*"))
         
         for result_dir in result_dirs:

@@ -22,6 +22,7 @@ The project is organized as follows:
 | `run_wrapper.sh` | Container wrapper script executed inside the Docker container |
 | `dockerfile` | Docker container definition for the benchmark environment |
 | `docker-compose.yml` | Docker Compose configuration for orchestrating containers |
+| `keycloak-tools/` | Auto-managed directory containing Keycloak admin tools (kcadm.sh) and initialization scripts |
 | `results/` | Directory where test results are stored |
 | `aggregated-report/` | Directory containing aggregated HTML reports and summaries |
 | `aggregated-report-template/` | Template for generating aggregated reports |
@@ -44,47 +45,95 @@ The project is organized as follows:
   |          |               | | Keycloak Benchmark Tool       | |        |
   |          |               | | (Load Generation)             | |        |
   |          v               | +-------------------------------+ |        |
-  |  +-----------------+     |               |                   |   +-------------+
-  |  |                 |     |               v                   |   |             |
-  |  | Parameters      |     | +-------------------------------+ |   | Keycloak    |
-  |  | Configuration   | ==> | | Virtual Users                 |======> Server     |
-  |  |                 |     | | (Simulated Clients/Browsers)  | |   | Under Test  |
-  |  +-----------------+     | +-------------------------------+ |   |             |
-  |                          |               |                   |   +-------------+
-  |                          |               v                   |
-  |                          | +-------------------------------+ |
-  |                          | | Result Collection             | |
-  |                          | | (Raw Data)                    | |
-  |                          | +-------------------------------+ |
-  |                          |               |                   |
-  |                          +---------------|-------------------+
-  |                                          |
-  |                                          v
-  |  +-----------------+     +-------------------------------+
-  |  |                 |     |                               |
-  |  | Aggregator      | <== | Raw Results                   |
-  |  | (Processing)    |     | (JSON Files)                  |
-  |  |                 |     |                               |
-  |  +-----------------+     +-------------------------------+
-  |          |
-  |          v
-  |  +----------------------------------------------+
-  |  |                                              |
-  |  | Consolidated Reports                         |
-  |  | (HTML Dashboard + JSON Summary)              |
-  |  |                                              |
-  |  +----------------------------------------------+
-  |
+  |  +-----------------+     |               |                   |        |
+  |  |                 |     |               v                   |   +----+
+  |  | Parameters      |     | +-------------------------------+ |   |    |
+  |  | Configuration   | ==> | | Virtual Users                 |=====> K  |
+  |  |                 |     | | (Simulated Clients/Browsers)  | |   | e  |
+  |  +-----------------+     | +-------------------------------+ |   | y  |
+  |          |               |               |                   |   | c  |
+  |          v               |               v                   |   | l  |
+  |  +-----------------+     | +-------------------------------+ |   | o  |
+  |  | keycloak-tools/ |     | | Raw Result Collection         | |   | a  |
+  |  | (--init only)   |     | | (Individual JSON/HTML)        | |   | k  |
+  |  +-----------------+     | +-------------------------------+ |   |    |
+  |                          |               |                   |   | S  |
+  |                          +---------------|-------------------+   | e  |
+  |                                          |                       | r  |
+  |                                          v                       | v  |
+  |                          +--------------------------------+      | e  |
+  |                          |                                |      | r  |
+  |                          | Host: ./results Directory      |      |    |
+  |                          | (Collected from all containers)|      +----+
+  |                          +--------------------------------+           |
+  |                                          |                            |
+  |                                          v                            |
+  |                          +-------------------------------+            |
+  |                          |                               |            |
+  |                          | Host: Results Aggregator      |            |
+  |                          | (Python processing)           |            |
+  |                          +-------------------------------+            |
+  |                                          |                            |
+  |                                          v                            |
+  |                          +-------------------------------+            |
+  |                          |                               |            |
+  |                          | Host: ./aggregated-report/    |            |
+  |                          | (HTML Dashboard + JSON)       |            |
+  |                          +-------------------------------+            |
+  |                                                                       |
   +-----------------------------------------------------------------------+
 ```
 
-> For detailed information about the results aggregator, please refer to: [Test Results Aggregator README](test_results_aggregator/README.md)
+### Keycloak Tools Management
+
+The script can optionally set up the `keycloak-tools/` directory with necessary Keycloak administration tools when using the `--init` flag:
+
+1. **Conditional Download**: When you run `./run-benchmark.sh --init`, it automatically downloads (if needed):
+   - Keycloak 26.2.4 release (for admin tools)
+   - Keycloak Benchmark repository (for initialization scripts)
+
+2. **Admin Tools**: The `keycloak-tools/` directory contains:
+   - `kcadm.sh` - Keycloak admin CLI tool
+   - `client/` - Required JAR files and dependencies
+   - `initialize-benchmark-entities.sh` - Script to set up test entities
+
+3. **Password Requirement**: The `--init` flag requires the `-p, --password` parameter to:
+   - Authenticate with your Keycloak server as admin
+   - Create/configure test realms, clients, and users
+
+4. **Clean Slate Testing**: The initialization process ensures that:
+   - Test entities (realm, clients, users) are **completely recreated** for each test run
+   - Previous test data is cleaned up automatically
+   - QA teams get consistent, predictable test environments without manual cleanup
+
+5. **Two Usage Modes**:
+   - **With `--init`**: Downloads tools, initializes entities, then runs tests (⚠️ **Only use when test data doesn't exist or is corrupted**)
+   - **Without `--init`**: Assumes test entities exist, runs tests directly (👍 **Recommended for regular testing**)
+
+6. **Pre-configured Environments**:
+   - **codacash-dev**: Already has `marketing-dev-benchmark-testing-realm` set up and ready to use
+   - **Other environments**: May require `--init` for first-time setup
+
+**Note**: Admin credentials are only used during the initialization phase on the host machine and are never passed to the Docker containers, ensuring better security.
 
 ## Quick Start with Docker
 
 ### Prerequisites
 - Docker and Docker Compose installed
 - Access to your Keycloak server endpoint
+- **Keycloak Admin Credentials**: Valid admin username and password for your Keycloak instance
+  - **Why required**: The benchmark tool needs admin privileges to:
+    - Create and configure test realms, clients, and users
+    - Initialize benchmark entities automatically
+    - Clean up test data for consistent test environments
+  - **How to obtain**: 
+    - Use the default admin credentials you configured during Keycloak setup
+      - For codacash-dev account, check in the AWS Secretes Manager
+    - Ensure the user has `admin` role in the `master` realm
+  - **Security considerations**:
+    - Admin credentials are only used on the host machine during initialization
+    - Passwords are never passed into Docker containers
+    - Consider using a dedicated testing admin account rather than production admin credentials
 
 ### How to Run the Test
 
@@ -116,10 +165,12 @@ The script supports various options to customize your test:
 | Option | Description | Required | Default |
 |--------|-------------|----------|---------|
 | `-u, --url` | Keycloak server URL. Must be an accessible hostname or IP address from the container. **Do not use localhost or 127.0.0.1** as the container cannot reach your local machine's Keycloak instance. | **Required** | - |
+| `-p, --password` | Keycloak admin password. If the password contains special characters, please wrap it with quotes (e.g., `"aBcDeF)12]5566"`). | Optional | - |
+| `--init` | Initialize Keycloak test entities (requires password). **Only use when test data doesn't exist or is corrupted and needs rebuilding. Do not use this option for regular testing.** | Optional | false |
 | `-s, --scenario` | Test scenario to run | Optional | keycloak.scenario.authentication.AuthorizationCode |
 | `-n, --users-per-sec` | Users per second | Optional | 10 |
 | `-t, --time` | Measurement time in seconds | Optional | 60 |
-| `-r, --realm` | Test realm name | Optional | benchmark-testing-realm |
+| `-r, --realm` | Test realm name. For codacash-dev environment, use `marketing-dev-benchmark-testing-realm` which is already set up and ready to use. | Optional | marketing-dev-benchmark-testing-realm |
 | `-c, --clients` | Clients per realm | Optional | 1 |
 | `-i, --instances` | Number of parallel container instances | Optional | 1 |
 | `--clean` | Clean old containers and results | Optional | false |
@@ -127,6 +178,15 @@ The script supports various options to customize your test:
 ### Examples
 
 ```bash
+# Basic test (assumes test entities already exist in Keycloak)
+./run-benchmark.sh -u http://your-keycloak-server:8080
+
+# Test with codacash-dev environment using existing realm
+./run-benchmark.sh -u http://your-keycloak-server:8080 -r marketing-dev-benchmark-testing-realm
+
+# Initialize test environment and run test (only when data is missing/corrupted)
+./run-benchmark.sh -u http://your-keycloak-server:8080 -p admin123 --init
+
 # Run with 20 users per second for 2 minutes
 ./run-benchmark.sh -u http://your-keycloak-server:8080 -n 20 -t 120
 
@@ -139,8 +199,32 @@ The script supports various options to customize your test:
 # Clean previous results before running
 ./run-benchmark.sh -u http://your-keycloak-server:8080 --clean
 
-# High load test: 50 users/sec for 10 seconds with 5 parallel instances (250 users/sec total)
-./run-benchmark.sh -u http://your-keycloak-server:8080 -n 50 -t 10 -i 5 --clean
+# High load test with codacash-dev environment
+./run-benchmark.sh -u http://your-keycloak-server:8080m -r marketing-dev-benchmark-testing-realm -n 50 -t 10 -i 5 --clean
+
+# For TeamCity pipeline:
+./run-benchmark.sh \
+ --url http://your-keycloak-server:8080 \
+ --scenario keycloak.scenario.authentication.AuthorizationCode \
+ --users-per-sec 50 \
+ --time 600 \
+ --realm marketing-dev-benchmark-testing-realm \
+ --clients 1 \
+ --instances 5 \
+ --clean
+
+# Full example with initialization (only when rebuilding is needed)
+./run-benchmark.sh \
+ --url http://your-keycloak-server:8080 \
+ --password "aBcDeF)12]5566" \
+ --init \
+ --scenario keycloak.scenario.authentication.AuthorizationCode \
+ --users-per-sec 10 \
+ --time 60 \
+ --realm benchmark-testing-realm \
+ --clients 1 \
+ --instances 5 \
+ --clean
 ```
 
 ## Scaling Load Tests

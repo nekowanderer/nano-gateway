@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Define color codes
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
 # Create results directory
 mkdir -p /benchmark-results
 mkdir -p /benchmark/keycloak-benchmark-26.2-SNAPSHOT/results
@@ -10,7 +16,7 @@ SCENARIO_SUFFIX=${SCENARIO_SUFFIX:-"authorizationcode"}
 SERVER_URL=${KEYCLOAK_URL}
 USERS_PER_SEC=${USERS_PER_SEC:-"10"}
 MEASUREMENT=${MEASUREMENT_TIME:-"60"}
-REALM_NAME=${REALM_NAME:-"benchmark-testing-realm"}
+REALM_NAME=${REALM_NAME:-"marketing-dev-benchmark-testing-realm"}
 CLIENTS_PER_REALM=${CLIENTS_PER_REALM:-"1"}
 
 # Debug output - show received environment variables
@@ -47,65 +53,14 @@ cd /benchmark
   --realm-name=${REALM_NAME} \
   --clients-per-realm=${CLIENTS_PER_REALM}
 
-# Copy results to mounted volume
-if [ -d "/benchmark/keycloak-benchmark-26.2-SNAPSHOT/results" ]; then
-  cp -r /benchmark/keycloak-benchmark-26.2-SNAPSHOT/results/* /benchmark-results/ || true
-  echo "Results copied to mounted volume"
+# Copy results to the aggregated results directory
+RESULTS_DIR="/benchmark/keycloak-benchmark-26.2-SNAPSHOT/results"
+if [ -d "${RESULTS_DIR}" ] && [ "$(ls -A ${RESULTS_DIR})" ]; then
+  echo "Copying results from ${RESULTS_DIR} to /benchmark-results..."
+  cp -r ${RESULTS_DIR}/* /benchmark-results/ || echo "Failed to copy some results"
+  echo "Results copied successfully"
 else
-  echo "Warning: Results directory not found"
+  echo -e "${RED}Warning: No results directory found at ${RESULTS_DIR}${NC}"
 fi
 
-# Output result summary
-echo "===== Test Result Summary ====="
-echo "Scenario: ${SCENARIO}"
-echo "Scenario suffix: ${SCENARIO_SUFFIX}"
-echo "Server: ${SERVER_URL}"
-echo "Users per second: ${USERS_PER_SEC}"
-echo "Measurement time (seconds): ${MEASUREMENT}"
-echo "Test realm: ${REALM_NAME}"
-echo "Number of clients per realm: ${CLIENTS_PER_REALM}"
-echo "Full report saved to ./results directory"
-
-# Analyze test results
-echo "===== Analyzing Test Results ====="
-cd /benchmark
-
-# Create directory for aggregated report
-mkdir -p /benchmark-results/aggregated-report
-
-# Create result_summary.json file
-OUTPUT_FILE="/benchmark-results/aggregated-report/result_summary.json"
-
-# Verify python is available
-if command -v python3 &> /dev/null; then
-  echo "Running test results aggregator..."
-  python3 -c "
-import sys
-sys.path.insert(0, '/benchmark')
-from test_results_aggregator.main import main
-sys.argv = ['', '${SCENARIO_SUFFIX}', '--dir', '/benchmark-results', '--output', '${OUTPUT_FILE}']
-main()
-"
-  # Check if aggregation was successful
-  if [ -f "${OUTPUT_FILE}" ]; then
-    echo "Results successfully aggregated to ${OUTPUT_FILE}"
-    
-    # Optional: Generate HTML report
-    python3 -c "
-import sys
-sys.path.insert(0, '/benchmark')
-from test_results_aggregator.main import main
-sys.argv = ['', '${SCENARIO_SUFFIX}', '--dir', '/benchmark-results', '--html', '/benchmark/aggregated-report']
-main()
-"
-    # Copy aggregated report to mounted volume
-    if [ -d "/benchmark/aggregated-report" ]; then
-      cp -r /benchmark/aggregated-report/* /benchmark-results/aggregated-report/ || true
-      echo "HTML report generated in /benchmark-results/aggregated-report/"
-    fi
-  else
-    echo "Warning: Failed to generate result summary"
-  fi
-else
-  echo "Warning: Python3 not available, skipping results aggregation"
-fi 
+echo -e "${GREEN}Container benchmark completed successfully${NC}" 
