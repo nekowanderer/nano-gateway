@@ -167,6 +167,9 @@ The script supports various options to customize your test:
 | `-u, --url` | Keycloak server URL. Must be an accessible hostname or IP address from the container. **Do not use localhost or 127.0.0.1** as the container cannot reach your local machine's Keycloak instance. | **Required** | - |
 | `-p, --password` | Keycloak admin password. If the password contains special characters, please wrap it with quotes (e.g., `"aBcDeF)12]5566"`). | Optional | - |
 | `--init` | Initialize Keycloak test entities (requires password). **Only use when test data doesn't exist or is corrupted and needs rebuilding. Do not use this option for regular testing.** | Optional | false |
+| `--version` | Specify Docker image version tag. Useful for testing specific versions of the benchmark tool. | Optional | latest |
+| `--use-local` | Use local Dockerfile build instead of DockerHub image. Useful for development or when making changes to the Dockerfile. | Optional | false |
+| `--use-remote` | Use DockerHub image instead of local build. This is the default behavior. | Optional | true |
 | `-s, --scenario` | Test scenario to run | Optional | keycloak.scenario.authentication.AuthorizationCode |
 | `-n, --users-per-sec` | Users per second | Optional | 10 |
 | `-t, --time` | Measurement time in seconds | Optional | 60 |
@@ -225,6 +228,15 @@ The script supports various options to customize your test:
  --clients 1 \
  --instances 5 \
  --clean
+
+# Use a specific Docker image version 
+./run-benchmark.sh -u http://your-keycloak-server:8080 --version v1.0.0
+
+# Use local Dockerfile build instead of DockerHub image (for development)
+./run-benchmark.sh -u http://your-keycloak-server:8080 --use-local
+
+# Force using DockerHub image (default behavior)
+./run-benchmark.sh -u http://your-keycloak-server:8080 --use-remote
 ```
 
 ## Scaling Load Tests
@@ -268,6 +280,46 @@ This project uses:
 - The official Keycloak Benchmark tool
 - A custom wrapper script to simplify running tests
 - Python-based test results aggregator for comprehensive reporting
+
+## Docker Image Management
+
+This project supports both local development and shared Docker images:
+
+### Docker Hub Repository
+
+The benchmark tool is available as a Docker image at:
+```
+nekowandrer/keycloak-benchmark
+```
+
+Available tags:
+- `latest` - The most recent stable version 
+- `v1.0.0` - Specific version releases
+
+### Development Workflow
+
+1. **Local Development**: 
+   - Use `--use-local` flag to build from local Dockerfile
+   - Useful when making changes to the Dockerfile or scripts
+   - Example: `./run-benchmark.sh -u http://your-server:8080 --use-local`
+
+2. **Production/Shared Usage**:
+   - Use pre-built images from Docker Hub (default)
+   - Faster startup and consistent environment
+   - Example: `./run-benchmark.sh -u http://your-server:8080 --version v1.0.0`
+
+3. **Creating New Versions**:
+   ```bash
+   # Build new version
+   docker build -t nekowandrer/keycloak-benchmark:vX.Y.Z .
+   
+   # Tag as latest
+   docker tag nekowandrer/keycloak-benchmark:vX.Y.Z nekowandrer/keycloak-benchmark:latest
+   
+   # Push to Docker Hub
+   docker push nekowandrer/keycloak-benchmark:vX.Y.Z
+   docker push nekowandrer/keycloak-benchmark:latest
+   ```
 
 ## License Notice
 

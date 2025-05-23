@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
+    image: nekowandrer/keycloak-benchmark:${VERSION:-latest}
     volumes:
       - ./results:/benchmark-results
     environment:
