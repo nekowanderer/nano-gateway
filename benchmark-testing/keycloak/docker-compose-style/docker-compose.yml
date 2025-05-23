@@ -5,7 +5,6 @@ services:
       dockerfile: dockerfile
     volumes:
       - ./results:/benchmark-results
-      - ./aggregated-report:/benchmark/aggregated-report
     environment:
       - TZ=Asia/Taipei
       - KEYCLOAK_URL=${KEYCLOAK_URL}

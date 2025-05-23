@@ -5,9 +5,16 @@ Report generators for benchmark test results.
 """
 
 import os
-import re
 import json
 import shutil
+
+# Try to import BeautifulSoup, but don't fail if it's not available
+try:
+    from bs4 import BeautifulSoup
+    BS4_AVAILABLE = True
+except ImportError:
+    BS4_AVAILABLE = False
+    print("Warning: BeautifulSoup4 not found. HTML content replacement will be skipped.")
 
 
 class JsonReporter:
@@ -86,62 +93,6 @@ class HtmlReporter:
         """Initialize with an aggregator instance"""
         self.aggregator = aggregator
     
-    def _generate_html_stats_rows(self):
-        """Generate HTML statistics row data"""
-        # Generate overall statistics row
-        overall_row = f"""
-        <tr id="all" class="total">
-            <td class="total col-1">
-                <div class="expandable-container">
-                    <span id="all" style="margin-left: 0px;" class="expand-button">&nbsp;</span>
-                    <a href="index.html" class="withTooltip">All Requests (Summary)</a><span class="value" style="display:none;">0</span>
-                </div>
-            </td>
-            <td class="value total col-2">{self.aggregator.total_requests_sum}</td>
-            <td class="value ok col-3">{self.aggregator.ok_requests_sum}</td>
-            <td class="value ko col-4">{self.aggregator.ko_requests_sum}</td>
-            <td class="value ko col-5">0.00</td>
-            <td class="value total col-6">{self.aggregator.rps_avg}</td>
-            <td class="value total col-7">{self.aggregator.min_time_min}</td>
-            <td class="value total col-8">{self.aggregator.median_time_avg}</td>
-            <td class="value total col-9">{self.aggregator.percentiles2_avg}</td>
-            <td class="value total col-10">{self.aggregator.percentiles3_avg}</td>
-            <td class="value total col-11">{self.aggregator.percentiles4_avg}</td>
-            <td class="value total col-12">{self.aggregator.max_time_max}</td>
-            <td class="value total col-13">{self.aggregator.mean_time_avg}</td>
-            <td class="value total col-14">{self.aggregator.std_dev_avg}</td>
-        </tr>
-        """
-        
-        # Generate request type specific statistics rows
-        request_rows = ""
-        for idx, (req_name, stats) in enumerate(sorted(self.aggregator.request_type_stats.items()), 1):
-            request_rows += f"""
-            <tr id="req_{idx}" data-parent="all">
-                <td class="total col-1">
-                    <div class="expandable-container">
-                        <span id="req_{idx}" style="margin-left: 10px;" class="expand-button hidden">&nbsp;</span>
-                        <a href="#" class="withTooltip">{req_name}</a><span class="value" style="display:none;">{idx}</span>
-                    </div>
-                </td>
-                <td class="value total col-2">{stats.count}</td>
-                <td class="value ok col-3">{stats.count}</td>
-                <td class="value ko col-4">0</td>
-                <td class="value ko col-5">0.00</td>
-                <td class="value total col-6">{stats.rps}</td>
-                <td class="value total col-7">{stats.min_val if stats.min_val != float('inf') else 0}</td>
-                <td class="value total col-8">{stats.median}</td>
-                <td class="value total col-9">{stats.percentiles2}</td>
-                <td class="value total col-10">{stats.percentiles3}</td>
-                <td class="value total col-11">{stats.percentiles4}</td>
-                <td class="value total col-12">{stats.max_val}</td>
-                <td class="value total col-13">{stats.mean}</td>
-                <td class="value total col-14">{stats.std_dev}</td>
-            </tr>
-            """
-        
-        return overall_row + request_rows
-    
     def export_html_report(self, output_dir="./aggregate-report"):
         """Generate HTML aggregated report"""
         if not self.aggregator.test_results or not self.aggregator.html_template_dir:
@@ -162,63 +113,44 @@ class HtmlReporter:
                     shutil.rmtree(dst_dir)
                 shutil.copytree(src_dir, dst_dir)
         
-        # Read template file
+        # Process the template HTML file
         template_file = os.path.join(self.aggregator.html_template_dir, "index.html")
+        output_file = os.path.join(output_dir, "index.html")
+        
         if not os.path.exists(template_file):
             print(f"Template file not found: {template_file}")
             return False
         
         try:
-            with open(template_file, 'r', encoding='utf-8') as f:
-                html_content = f.read()
+            if BS4_AVAILABLE:
+                # Use BeautifulSoup for precise HTML manipulation
+                with open(template_file, 'r', encoding='utf-8') as f:
+                    soup = BeautifulSoup(f.read(), 'html.parser')
+                
+                # Extract scenario short name
+                scenario_short_name = self.aggregator.sample_scenario.split('.')[-1] if self.aggregator.sample_scenario else "Unknown"
+                
+                # Update the title tag
+                title_tag = soup.find('title')
+                if title_tag:
+                    title_tag.string = f"Gatling Stats - {scenario_short_name} Aggregate Report"
+                
+                # Update the onglet div
+                onglet_div = soup.find('div', class_='onglet')
+                if onglet_div:
+                    onglet_div.string = scenario_short_name
+                
+                # Write the modified HTML
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    f.write(str(soup))
+                
+                print(f"HTML aggregate report generated with content updates: {output_file}")
+            else:
+                # Fall back to simple file copy if BeautifulSoup is not available
+                shutil.copy2(template_file, output_file)
+                print(f"HTML aggregate report generated (simple copy): {output_file}")
+                print("Note: Content replacement skipped due to missing BeautifulSoup4")
             
-            # Update title
-            html_content = re.sub(
-                r'<title>Gatling Stats - .*?</title>',
-                f'<title>Gatling Stats - {self.aggregator.sample_scenario} Aggregate Report</title>',
-                html_content
-            )
-            
-            # Update title area
-            html_content = re.sub(
-                r'<div class="onglet">.*?</div>',
-                f'<div class="onglet">{self.aggregator.sample_scenario} (Aggregate Report)</div>',
-                html_content
-            )
-            
-            # Update simulation information area
-            date_pattern = r'<span class="simulation-information-item">.*?<span class="simulation-information-label">Date: </span>.*?</span>'
-            time_info = f'<span class="simulation-information-item"><span class="simulation-information-label">Date: </span><span>{self.aggregator.earliest_time} to {self.aggregator.latest_time}</span></span>'
-            html_content = re.sub(date_pattern, time_info, html_content)
-            
-            # Update statistics table
-            # Create complete table, not just rows
-            stats_body_start = html_content.find('<table id="container_statistics_body" class="statistics-in extensible-geant">')
-            if stats_body_start != -1:
-                stats_body_end = html_content.find('</table>', stats_body_start)
-                if stats_body_end != -1:
-                    # Completely replace table content, including <tbody> tags
-                    new_table_content = '<table id="container_statistics_body" class="statistics-in extensible-geant">\n<tbody>\n'
-                    new_table_content += self._generate_html_stats_rows()
-                    new_table_content += '\n</tbody>\n</table>'
-                    
-                    html_content = html_content[:stats_body_start] + new_table_content + html_content[stats_body_end + 8:]
-            
-            # Remove possibly existing original data parts to avoid JS processing
-            html_content = re.sub(r'var pageStats = stats.stats;', 'var pageStats = {};', html_content)
-            
-            # Write new HTML file
-            output_file = os.path.join(output_dir, "index.html")
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(html_content)
-            
-            # Create a special js file to override original statistics
-            js_dir = os.path.join(output_dir, "js")
-            os.makedirs(js_dir, exist_ok=True)
-            with open(os.path.join(js_dir, "stats.js"), "w") as f:
-                f.write("var stats = { name: 'Aggregate Stats', stats: {} };\n")
-            
-            print(f"HTML aggregate report generated: {output_file}")
             return True
         
         except (IOError, UnicodeDecodeError) as e:
