@@ -27,10 +27,15 @@ function show_help {
   echo "  -i, --instances NUM      Number of parallel container instances to run (default: 1)"
   echo "  --clean                  Clean old containers and results before running"
   echo "  --init                   Initialize Keycloak test entities (requires password)"
+  echo "  --version VERSION        Specify Docker image version tag (default: latest)"
+  echo "  --use-local              Use local Dockerfile build instead of DockerHub image"
+  echo "  --use-remote             Use DockerHub image instead of local build (default)"
   echo ""
   echo "Examples:"
   echo "  ./run-benchmark.sh -u http://keycloak.example.com --users-per-sec 20 --time 120 --instances 3"
   echo "  ./run-benchmark.sh -u http://keycloak.example.com -p admin123 --init -n 50 -t 300 -i 5 --clean"
+  echo "  ./run-benchmark.sh -u http://keycloak.example.com --version 1.0.0"
+  echo "  ./run-benchmark.sh -u http://keycloak.example.com --use-local  # Use local Dockerfile build"
   exit 0
 }
 
@@ -81,6 +86,8 @@ MEASUREMENT_TIME=60
 INSTANCES=1
 CLEAN=false
 INIT=false
+VERSION="latest"
+USE_LOCAL=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -126,6 +133,18 @@ while [[ $# -gt 0 ]]; do
       ;;
     --init)
       INIT=true
+      shift
+      ;;
+    --version)
+      VERSION="$2"
+      shift 2
+      ;;
+    --use-local)
+      USE_LOCAL=true
+      shift
+      ;;
+    --use-remote)
+      USE_LOCAL=false
       shift
       ;;
     *)
@@ -196,6 +215,8 @@ echo "Users per second: $USERS_PER_SEC"
 echo "Measurement time (seconds): $MEASUREMENT_TIME"
 echo "Container instances: $INSTANCES"
 echo "Scenario suffix: $SCENARIO_SUFFIX"
+echo "Docker image version: $VERSION"
+echo "Use local build: $([ "$USE_LOCAL" = true ] && echo "Yes" || echo "No")"
 echo "=============================="
 
 # Set environment variables and run docker-compose
@@ -206,6 +227,7 @@ export REALM_NAME="$REALM_NAME"
 export CLIENTS_PER_REALM="$CLIENTS_PER_REALM"
 export USERS_PER_SEC="$USERS_PER_SEC"
 export MEASUREMENT_TIME="$MEASUREMENT_TIME"
+export VERSION="$VERSION"
 
 # Debug output - show exported variables
 echo "===== Exported Environment Variables ====="
@@ -216,6 +238,7 @@ echo "REALM_NAME=$REALM_NAME"
 echo "CLIENTS_PER_REALM=$CLIENTS_PER_REALM"
 echo "USERS_PER_SEC=$USERS_PER_SEC"
 echo "MEASUREMENT_TIME=$MEASUREMENT_TIME"
+echo "VERSION=$VERSION"
 echo "=============================="
 
 # Initialize Keycloak (only if password is provided)
@@ -296,10 +319,26 @@ fi
 # Run docker-compose with --build to ensure container is rebuilt with new environment variables
 if [ "$INSTANCES" -gt 1 ]; then
   echo -e "${CYAN}Starting $INSTANCES test instances...${NC}"
-  docker-compose up --build --scale benchmark=$INSTANCES
+  if [ "$USE_LOCAL" = true ]; then
+    # Use local Dockerfile and force rebuild
+    docker-compose build --no-cache
+    docker-compose up --scale benchmark=$INSTANCES
+  else
+    # Use DockerHub image
+    docker-compose pull
+    docker-compose up --scale benchmark=$INSTANCES
+  fi
 else
   echo -e "${CYAN}Starting a single test instance...${NC}"
-  docker-compose up --build
+  if [ "$USE_LOCAL" = true ]; then
+    # Use local Dockerfile and force rebuild
+    docker-compose build --no-cache
+    docker-compose up
+  else
+    # Use DockerHub image
+    docker-compose pull
+    docker-compose up
+  fi
 fi
 
 echo -e "${GREEN}Test completed. Results saved in ./results directory.${NC}"
