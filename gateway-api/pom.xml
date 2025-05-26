@@ -24,8 +24,8 @@
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.22.3</quarkus.platform.version>
         <okhttp-client.version>4.12.0</okhttp-client.version>
-        <quarkus-keycloak-admin-rest-client.version>3.22.3</quarkus-keycloak-admin-rest-client.version>
-        <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
+        <quarkus-keycloak-admin-rest-client.version>3.23.0</quarkus-keycloak-admin-rest-client.version>
+        <mockito-junit-jupiter.version>5.17.0</mockito-junit-jupiter.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
     </properties>
